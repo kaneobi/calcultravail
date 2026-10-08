@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f2f2f7">
+<title>Suivi Chantier</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif}
+.app{max-width:720px;margin:auto;padding:calc(env(safe-area-inset-top) + 12px) 14px 35px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}h1{font-size:29px;margin:0}h2{font-size:20px;margin:0 0 12px}.muted{color:#777;font-size:13px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#dddde2;padding:4px;border-radius:14px;margin-bottom:14px}
+nav button{border:0;background:transparent;padding:9px 3px;border-radius:11px;font-size:12px}nav button.active{background:#fff;font-weight:700}
+.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:0 1px 4px #0001}
+label{display:block;font-size:12px;color:#666;margin-bottom:5px}input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;background:#fff;font-size:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:650;background:#111;color:#fff}.btn.light{background:#e9e9ee;color:#111}.btn.red{background:#ffe6e6;color:#b00020}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.line{display:grid;grid-template-columns:1fr 85px 85px 38px;gap:7px;align-items:end;margin-bottom:9px}.line .unit{font-size:11px;color:#777;margin-top:3px}
+.total{text-align:right;font-size:27px;font-weight:800;margin-top:12px}.total small{font-size:13px;color:#777;font-weight:500}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}
+.big{font-size:18px;font-weight:750}.money{font-weight:750;white-space:nowrap}.empty{text-align:center;padding:20px;color:#777}
+.badge{display:inline-block;padding:4px 8px;border-radius:9px;background:#eee;font-size:11px}
+@media(max-width:430px){.line{grid-template-columns:1fr 70px 78px 36px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>Suivi chantier</h1><span class="badge" id="count"></span></header>
+<nav id="nav">
+<button class="active" onclick="show('today')">Aujourd'hui</button>
+<button onclick="show('history')">Historique</button>
+<button onclick="show('rates')">Tarifs</button>
+<button onclick="show('sites')">Chantiers</button>
+</nav>
+<main id="main"></main>
+</div>
+
+<script>
+const K='suivi_chantier_v2';
+let db=JSON.parse(localStorage.getItem(K)||'null')||{days:{},rates:[],sites:[]};
+let currentDate=new Date().toISOString().slice(0,10), currentPage='today', lines=[];
+
+function save(){localStorage.setItem(K,JSON.stringify(db)); updateCount()}
+function money(n){return (Number(n)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
+function dateFR(d){return new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
+function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')}
+function updateCount(){document.getElementById('count').textContent=Object.keys(db.days).length+' jour'+(Object.keys(db.days).length>1?'s':'')}
+function show(p){currentPage=p;document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('active',['today','history','rates','sites'][i]===p)); render()}
+function render(){updateCount(); if(currentPage==='today') renderToday(); if(currentPage==='history') renderHistory(); if(currentPage==='rates') renderRates(); if(currentPage==='sites') renderSites()}
+
+function renderToday(){
+ if(!lines.length && db.days[currentDate]) lines=db.days[currentDate].lines.map(x=>({...x}));
+ const sites=db.sites.map((s,i)=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+ const day=db.days[currentDate];
+ document.getElementById('main').innerHTML=`
+ <div class="card">
+  <h2>Journée</h2>
+  <label>Date</label><input type="date" value="${currentDate}" onchange="changeDate(this.value)">
+  <label style="margin-top:10px">Chantier</label>
+  <select id="site"><option value="">— Aucun chantier —</option>${sites}</select>
+  ${day?.site && !db.sites.includes(day.site)?`<option>${esc(day.site)}</option>`:''}
+ </div>
+ <div class="card">
+  <h2>Travaux réalisés</h2>
+  <div id="lines"></div>
+  <button class="btn light" onclick="addLine()">＋ Ajouter une tâche</button>
+  <div class="total"><small>Total journée</small><br><span id="total">0,00 €</span></div>
+  <div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button><button class="btn red" onclick="clearDay()">Effacer</button></div>
+ </div>`;
+ document.getElementById('site').value=day?.site||'';
+ renderLines(); calc();
+}
+function changeDate(v){currentDate=v;lines=db.days[v]?db.days[v].lines.map(x=>({...x})):[];renderToday()}
+function addLine(){lines.push({rate:'',qty:'',price:''});renderLines()}
+function renderLines(){
+ const box=document.getElementById('lines'); if(!box)return;
+ if(!lines.length){box.innerHTML='<div class="empty">Aucune tâche. Ajoute une ligne.</div>';return}
+ const opts=db.rates.map((r,i)=>`<option value="${i}">${esc(r.name)} — ${money(r.price)}/${esc(r.unit)}</option>`).join('');
+ box.innerHTML=lines.map((l,i)=>`
+ <div class="line">
+  <div><label>Tâche</label><select onchange="pickRate(${i},this.value)"><option value="">Choisir…</option>${opts}</select><div class="unit">${l.unit?esc(l.unit):''}</div></div>
+  <div><label>Qté</label><input type="number" inputmode="decimal" step="0.01" value="${l.qty}" oninput="lines[${i}].qty=this.value;calc()"></div>
+  <div><label>Prix</label><input type="number" inputmode="decimal" step="0.01" value="${l.price}" oninput="lines[${i}].price=this.value;calc()"></div>
+  <button class="btn red" onclick="lines.splice(${i},1);renderLines();calc()">×</button>
+ </div>`).join('');
+ lines.forEach((l,i)=>{let s=document.querySelectorAll('.line select')[i];if(s)s.value=l.rate??''});
+}
+function pickRate(i,v){lines[i].rate=v;if(v!==''){let r=db.rates[Number(v)];lines[i].name=r.name;lines[i].unit=r.unit;lines[i].price=r.price}else{lines[i].name='';lines[i].unit='';lines[i].price=''}renderLines();calc()}
+function calc(){let t=lines.reduce((s,l)=>s+(Number(l.qty)||0)*(Number(l.price)||0),0);let e=document.getElementById('total');if(e)e.textContent=money(t);return t}
+function saveDay(){
+ const site=document.getElementById('site')?.value||'';
+ const clean=lines.filter(l=>l.name||Number(l.qty)||Number(l.price)).map(l=>({name:l.name||'',unit:l.unit||'',qty:Number(l.qty)||0,price:Number(l.price)||0}));
+ db.days[currentDate]={site,lines:clean,total:clean.reduce((s,l)=>s+l.qty*l.price,0)};lines=clean.map(x=>({...x}));save();alert('Journée enregistrée.');renderToday()
+}
+function clearDay(){if(confirm('Effacer les données de cette journée ?')){delete db.days[currentDate];lines=[];save();renderToday()}}
+function renderHistory(){
+ let dates=Object.keys(db.days).sort().reverse(), total=dates.reduce((s,d)=>s+db.days[d].total,0);
+ document.getElementById('main').innerHTML=`<div class="card"><h2>Historique</h2><div class="big">${money(total)}</div><div class="muted">Total cumulé des journées enregistrées</div></div>`+
+ (dates.length?dates.map(d=>`<div class="card"><div class="item"><div onclick="editDay('${d}')" style="cursor:pointer"><div class="big">${dateFR(d)}</div><div class="muted">${esc(db.days[d].site||'Sans chantier')} · ${db.days[d].lines.length} tâche(s)</div></div><div style="text-align:right"><div class="money">${money(db.days[d].total)}</div><button class="btn light" style="padding:7px 9px;margin-top:6px" onclick="editDay('${d}')">Modifier</button></div></div></div>`).join(''):'<div class="card empty">Aucune journée enregistrée.</div>');
+}
+function editDay(d){currentDate=d;lines=db.days[d].lines.map(x=>({...x}));show('today')}
+function renderRates(){
+ document.getElementById('main').innerHTML=`<div class="card"><h2>Nouveau tarif</h2><div class="grid2"><div><label>Tâche</label><input id="rn" placeholder="Ex. Enduit monocouche"></div><div><label>Unité</label><input id="ru" placeholder="m², ml, m³…"></div></div><label style="margin-top:9px">Prix unitaire (€)</label><input id="rp" type="number" inputmode="decimal" step="0.01" placeholder="14"><button class="btn" style="margin-top:10px" onclick="addRate()">Ajouter le tarif</button></div><div class="card"><h2>Mes tarifs</h2>${db.rates.length?db.rates.map((r,i)=>`<div class="item"><div><div class="big">${esc(r.name)}</div><div class="muted">${money(r.price)} / ${esc(r.unit)}</div></div><button class="btn red" onclick="db.rates.splice(${i},1);save();renderRates()">×</button></div>`).join(''):'<div class="empty">Aucun tarif enregistré.</div>'}</div>`;
+}
+function addRate(){let n=document.getElementById('rn').value.trim(),u=document.getElementById('ru').value.trim(),p=Number(document.getElementById('rp').value);if(!n||!u||!p){alert('Renseigne la tâche, l’unité et le prix.');return}db.rates.push({name:n,unit:u,price:p});save();renderRates()}
+function renderSites(){
+ document.getElementById('main').innerHTML=`<div class="card"><h2>Nouveau chantier</h2><label>Nom du chantier</label><input id="sn" placeholder="Ex. Chantier Prades"><button class="btn" style="margin-top:10px" onclick="addSite()">Ajouter</button></div><div class="card"><h2>Mes chantiers</h2>${db.sites.length?db.sites.map((s,i)=>`<div class="item"><div class="big">${esc(s)}</div><button class="btn red" onclick="db.sites.splice(${i},1);save();renderSites()">×</button></div>`).join(''):'<div class="empty">Aucun chantier enregistré.</div>'}</div>`;
+}
+function addSite(){let s=document.getElementById('sn').value.trim();if(!s)return;db.sites.push(s);save();renderSites()}
+updateCount();render();
+</script>
+</body>
+</html>
