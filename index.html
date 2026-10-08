@@ -6,11 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f2f7">
-<title>Suivi Chantier</title>
+<title>Suivi Chantier v16</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif}.app{max-width:900px;margin:auto;padding:calc(env(safe-area-inset-top) + 12px) 14px 40px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}h1{font-size:29px;margin:0}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.muted{color:#777;font-size:13px}nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:#dddde2;padding:4px;border-radius:14px;margin-bottom:14px}nav button{border:0;background:transparent;padding:9px 3px;border-radius:11px;font-size:12px}nav button.active{background:#fff;font-weight:700}.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:0 1px 4px #0001}label{display:block;font-size:12px;color:#666;margin-bottom:5px}input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;background:#fff;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:650;background:#111;color:#fff}.btn.light{background:#e9e9ee;color:#111}.btn.red{background:#ffe6e6;color:#b00020}.btn.green{background:#e7f7ed;color:#17663a}.btn.blue{background:#e8f0ff;color:#174ea6}.actions{display:flex;gap:8px;flex-wrap:wrap}.work{border:1px solid #e5e5e8;border-radius:14px;padding:11px;margin-bottom:10px;background:#fafafd}.workhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.worktitle{font-weight:750}.grid4{display:grid;grid-template-columns:1.35fr 1.55fr .65fr .85fr 38px;gap:7px;align-items:end}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.total{text-align:right;font-size:27px;font-weight:800;margin-top:12px}.total small{font-size:13px;color:#777;font-weight:500}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}.big{font-size:18px;font-weight:750}.money{font-weight:750;white-space:nowrap}.empty{text-align:center;padding:20px;color:#777}.badge{display:inline-block;padding:4px 8px;border-radius:9px;background:#eee;font-size:11px}.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#f7f7fa;border-radius:14px;padding:13px}.stat .value{font-size:21px;font-weight:800;margin-top:4px}.site-total{display:flex;justify-content:space-between;padding:8px 0;font-weight:650}.credit{background:#fff4e5;border-radius:12px;padding:10px;margin-top:7px}.modalbg{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.modal{background:#fff;border-radius:20px;padding:20px;width:min(430px,100%);box-shadow:0 12px 40px #0004}.toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 15px;border-radius:12px;z-index:30}.login{min-height:80vh;display:flex;align-items:center;justify-content:center}.login .card{width:min(430px,100%)}.topuser{display:flex;align-items:center;gap:8px}.spinner{text-align:center;padding:40px}.danger-note{background:#fff0f0;border-radius:12px;padding:11px;color:#8a0000;font-size:13px}@media(max-width:700px){.grid4{grid-template-columns:1fr 1fr}.grid4>div:nth-child(5){grid-column:2}.grid2{grid-template-columns:1fr}.app{padding-left:10px;padding-right:10px}nav button{font-size:11px}}
 </style>
-</head>
+<style>.history-worker{font-size:11px;font-weight:400;opacity:.65;margin-left:5px;white-space:nowrap}</style></head>
 <body>
 <div class="app">
 <header><div><h1>Suivi Chantier</h1><div id="count" class="muted"></div></div><div id="userArea"></div></header>
@@ -25,7 +25,7 @@ const {createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
 const LOCAL_KEY='suivi_chantier_v4';
 let session=null, profile=null, isAdmin=false;
-let sites=[], rates=[], credits=[];
+let sites=[], rates=[], credits=[], profiles=[];
 let days={}, currentDate=new Date().toISOString().slice(0,10), currentPage='today', lines=[];
 let undoStack=[];
 
@@ -71,11 +71,29 @@ async function loadData(){
  if(s.error){console.error(s.error);toast('Erreur chargement chantiers')}else sites=s.data||[];
  const r=await sb.from('taches').select('*').eq('actif',true).order('nom');
  if(r.error){console.error(r.error);toast('Erreur chargement tarifs')}else rates=r.data||[];
+ const p=await sb.from('profiles').select('id,nom,role');
+ if(p.error){console.error(p.error);profiles=[]}else profiles=p.data||[];
  const j=await sb.from('jours').select('*').order('date_travail',{ascending:false});
  if(j.error){console.error(j.error);toast('Erreur chargement journées');return}
  const raw=j.data||[]; const ids=raw.map(x=>x.id);
  let tr=[];
- if(ids.length){const q=await sb.from('travaux').select('*').in('jour_id',ids).order('created_at');if(q.error){console.error(q.error);toast('Erreur chargement travaux')}else tr=q.data||[]}
+ if(ids.length){
+   if(isAdmin){
+     const q=await sb.from('travaux').select('*').in('jour_id',ids).order('created_at');
+     if(q.error){console.error(q.error);toast('Erreur chargement travaux')}else tr=q.data||[];
+   }else{
+     const [pub,own]=await Promise.all([
+       sb.from('travaux_historique').select('*').in('jour_id',ids).order('created_at'),
+       sb.from('travaux').select('*').in('jour_id',ids).eq('user_id',session.user.id).order('created_at')
+     ]);
+     if(pub.error){console.error(pub.error);toast('Erreur chargement historique')}else tr=pub.data||[];
+     if(!own.error){
+       const byId=new Map((tr||[]).map(x=>[x.id,x]));
+       (own.data||[]).forEach(x=>byId.set(x.id,x));
+       tr=[...byId.values()];
+     }
+   }
+ }
  days={};
  raw.forEach(d=>{days[d.date_travail]={id:d.id,date:d.date_travail,user_id:d.user_id,lines:[],total:0,created_at:d.created_at}});
  tr.forEach(x=>{const d=Object.values(days).find(y=>y.id===x.jour_id);if(!d)return;const l={id:x.id,siteId:x.chantier_id,site:(sites.find(s=>s.id===x.chantier_id)||{}).nom||'',rateId:x.tache_id,rate:'',name:x.tache_nom,unit:x.unite,qty:Number(x.quantite)||0,price:Number(x.prix_unitaire)||0,user_id:x.user_id,remarque:x.remarque||''};d.lines.push(l);d.total+=l.qty*l.price});
@@ -90,8 +108,9 @@ async function logout(){await sb.auth.signOut()}
 function render(){if(!session)return renderLogin();setCount();if(currentPage==='today')renderToday();if(currentPage==='history')renderHistory();if(currentPage==='rates')renderRates();if(currentPage==='sites')renderSites();if(currentPage==='search')renderSearch();if(currentPage==='users')renderUsers()}
 function nav(){return `<nav><button onclick="show('today')">Aujourd’hui</button><button onclick="show('history')">Historique</button>${isAdmin?'<button onclick="show(\'rates\')">🔒 Tarifs</button><button onclick="show(\'sites\')">🔒 Chantiers</button>':'<button disabled style="opacity:.45">🔒 Tarifs</button><button disabled style="opacity:.45">🔒 Chantiers</button>'}<button onclick="show('search')">🔎 Recherche</button>${isAdmin?'<button onclick="show(\'users\')">👥 Utilisateurs</button>':''}</nav>`}
 function renderToday(){
- const day=days[currentDate]; if(day&&!lines.length)lines=day.lines.map(x=>({...x}));
- document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.</div></div><div class="card"><h2>Travaux réalisés</h2><div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche / chantier</button>${isAdmin?'<div class="total"><small>Total journée</small><br><span id="total">0,00 €</span></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button><button class="btn red" onclick="clearDay()">Effacer</button></div></div></main>`;renderLines();calc()}
+ const day=days[currentDate]; if(day&&!lines.length&&(isAdmin||day.lines.every(l=>l.user_id===session.user.id)))lines=day.lines.map(x=>({...x}));
+ const editingExisting=!isAdmin && !!day && lines.length>0;
+ document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" ${editingExisting?'disabled':''} onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.${editingExisting?' Tu modifies uniquement tes propres lignes.':''}</div></div><div class="card"><h2>Travaux réalisés</h2><div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche / chantier</button>${isAdmin?'<div class="total"><small>Total journée</small><br><span id="total">0,00 €</span></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button>${isAdmin||!day||day.lines.every(l=>l.user_id===session.user.id)?'<button class="btn red" onclick="clearDay()">Effacer</button>':''}</div></div></main>`;renderLines();calc()}
 function changeDate(v){currentDate=v;lines=days[v]?days[v].lines.map(x=>({...x})):[];renderToday()}
 function addLine(){lines.push({siteId:'',site:'',rateId:'',name:'',unit:'',qty:'',price:'',remarque:''});renderLines();calc()}
 function renderLines(){
@@ -109,17 +128,36 @@ async function saveDay(){
  const clean=lines.filter(l=>l.siteId||l.name||Number(l.qty)||Number(l.price));
  if(clean.some(l=>!l.siteId||!l.name)){toast('Chaque ligne doit avoir un chantier et une tâche');return}
  let day=days[currentDate];
- if(day){const oldIds=day.lines.filter(x=>x.id).map(x=>x.id);if(oldIds.length)await sb.from('travaux').delete().in('id',oldIds);}
  let dayId=day?.id;
- if(!dayId){const q=await sb.from('jours').insert({date_travail:currentDate,user_id:session.user.id}).select().single();if(q.error){toast('Erreur création journée : '+q.error.message);return}dayId=q.data.id}
- const payload=clean.map(l=>({jour_id:dayId,chantier_id:l.siteId,tache_id:l.rateId||null,tache_nom:l.name,unite:l.unit||'',quantite:Number(l.qty)||0,prix_unitaire:Number(l.price)||0,remarque:(l.remarque||'').trim()||null,user_id:session.user.id}));
+ if(!dayId){
+   const q=await sb.from('jours').insert({date_travail:currentDate,user_id:session.user.id}).select().single();
+   if(q.error){toast('Erreur création journée : '+q.error.message);return}
+   dayId=q.data.id;
+ }
+ if(isAdmin){
+   const oldIds=day?.lines.filter(x=>x.id).map(x=>x.id)||[];
+   if(oldIds.length){const qd=await sb.from('travaux').delete().in('id',oldIds);if(qd.error){toast('Erreur suppression des anciennes lignes : '+qd.error.message);return}}
+ }else{
+   const ownOldIds=day?.lines.filter(x=>x.id&&x.user_id===session.user.id).map(x=>x.id)||[];
+   if(ownOldIds.length){const qd=await sb.from('travaux').delete().in('id',ownOldIds);if(qd.error){toast('Erreur modification de tes lignes : '+qd.error.message);return}}
+ }
+ const payload=clean.map(l=>({jour_id:dayId,chantier_id:l.siteId,tache_id:l.rateId||null,tache_nom:l.name,unite:l.unit||'',quantite:Number(l.qty)||0,prix_unitaire:Number(l.price)||0,remarque:(l.remarque||'').trim()||null,user_id:isAdmin?(l.user_id||session.user.id):session.user.id}));
  if(payload.length){const q=await sb.from('travaux').insert(payload);if(q.error){toast('Erreur enregistrement : '+q.error.message);return}}
- await sb.from('jours').update({updated_at:new Date().toISOString()}).eq('id',dayId);
- await loadData();lines=days[currentDate]?days[currentDate].lines.map(x=>({...x})):[];toast('Journée enregistrée');renderToday()
+ if(isAdmin){
+   const uq=await sb.from('jours').update({updated_at:new Date().toISOString()}).eq('id',dayId);
+   if(uq.error){toast('Journée enregistrée, mais la date n’a pas été mise à jour : '+uq.error.message)}
+ }
+ await loadData();
+ lines=days[currentDate]?(isAdmin?days[currentDate].lines:days[currentDate].lines.filter(x=>x.user_id===session.user.id)).map(x=>({...x})) : [];
+ toast('Journée enregistrée');renderToday()
 }
 async function clearDay(){const d=days[currentDate];if(!d){toast('Aucune journée enregistrée');return}if(!confirm('Effacer toute cette journée ?'))return;const q=await sb.from('jours').delete().eq('id',d.id);if(q.error){toast('Impossible de supprimer : '+q.error.message);return}undoStack.push({type:'day',date:currentDate,data:d});await loadData();lines=[];renderToday();toast('Journée supprimée — annulation possible tant que la page reste ouverte')}
 
 function monthlyTotals(){const out={};Object.entries(days).forEach(([d,x])=>{const m=d.slice(0,7);out[m]=(out[m]||0)+x.total});return out}
+function userName(userId){
+  const p=profiles.find(x=>x.id===userId);
+  return p?.nom||'';
+}
 function renderHistory(){
   const dates=Object.keys(days).sort().reverse();
   let html=nav()+'<main>';
@@ -156,9 +194,15 @@ function renderHistory(){
           const bySite={};
           days[d].lines.forEach(l=>bySite[l.site||'Sans chantier']=(bySite[l.site||'Sans chantier']||0)+l.qty*l.price);
           html+='<div style="padding:10px 6px 10px 10px;border-bottom:1px solid #eee"><div class="item">';
-          html+='<div><div class="big">'+dateFR(d)+'</div><div class="muted">'+Object.keys(bySite).length+' chantier(s) · '+days[d].lines.length+' tâche(s)'+(isAdmin&&days[d].user_id!==session.user.id?' · autre utilisateur':'')+'</div></div>';
-          html+='<div style="text-align:right">'+(isAdmin?'<div class="money">'+money(days[d].total)+'</div>':'')+'<div class="actions" style="justify-content:flex-end;margin-top:6px"><button class="btn light" style="padding:7px 9px" onclick="viewDay(\''+d+'\')">Voir</button><button class="btn light" style="padding:7px 9px" onclick="editDay(\''+d+'\')">Modifier</button></div></div></div>';
-          Object.entries(bySite).forEach(([site,total])=>{html+='<div class="site-total"><span>🏗️ '+esc(site)+'</span>'+(isAdmin?'<span>'+money(total)+'</span>':'')+'</div>'});
+          html+='<div><div class="big">'+dateFR(d)+'</div><div class="muted">'+Object.keys(bySite).length+' chantier(s) · '+days[d].lines.length+' tâche(s)'+'</div></div>';
+          html+='<div style="text-align:right">'+(isAdmin?'<div class="money">'+money(days[d].total)+'</div>':'')+'<div class="actions" style="justify-content:flex-end;margin-top:6px"><button class="btn light" style="padding:7px 9px" onclick="viewDay(\''+d+'\')">Voir</button>'+(isAdmin||canEditDay(d)?'<button class="btn light" style="padding:7px 9px" onclick="editDay(\''+d+'\')">Modifier</button>':'')+'</div></div></div>';
+          Object.entries(bySite).forEach(([site,total])=>{
+            const siteLines=days[d].lines.filter(l=>(l.site||'Sans chantier')===site);
+            const workerIds=[...new Set(siteLines.map(l=>l.user_id).filter(Boolean))];
+            const workerNames=workerIds.map(id=>userName(id)).filter(Boolean);
+            const workerLabel=workerNames.length?'<span class="history-worker">('+workerNames.map(esc).join(', ')+')</span>':'';
+            html+='<div class="site-total"><span>🏗️ '+esc(site)+' '+workerLabel+'</span>'+(isAdmin?'<span>'+money(total)+'</span>':'')+'</div>';
+          });
           html+='</div>';
         });
         html+='</details>';
@@ -169,11 +213,11 @@ function renderHistory(){
   html+='</div></main>';
   document.getElementById('app').innerHTML=html;
 }
-function editDay(d){if(!days[d])return;if(days[d].user_id!==session.user.id&&!isAdmin){toast('Cette journée ne t’appartient pas');return}currentDate=d;lines=days[d].lines.map(x=>({...x}));show('today')}
+function canEditDay(d){const day=days[d];if(!day)return false;return isAdmin||day.lines.some(l=>l.user_id===session.user.id)}
+function editDay(d){const day=days[d];if(!day)return;if(!canEditDay(d)){toast('Tu n’as aucune ligne modifiable dans cette journée');return}currentDate=d;lines=isAdmin?day.lines.map(x=>({...x})):day.lines.filter(x=>x.user_id===session.user.id).map(x=>({...x}));show('today')}
 function viewDay(d){
   const day=days[d];
   if(!day){toast('Journée introuvable');return}
-  if(day.user_id!==session.user.id&&!isAdmin){toast('Cette journée ne t’appartient pas');return}
   const bySite={};
   day.lines.forEach(l=>{const k=l.site||'Sans chantier';if(!bySite[k])bySite[k]=[];bySite[k].push(l)});
   let html='<div class=\"modalbg\"><div class=\"modal\" style=\"width:min(700px,100%);max-height:90vh;overflow:auto\"><div style=\"display:flex;justify-content:space-between;align-items:center;gap:10px\"><div><h2 style=\"margin:0 0 4px\">Journée du '+dateFR(d)+'</h2><div class=\"muted\">Consultation seule</div></div><button class=\"btn light\" onclick=\"closeModal()\">Fermer</button></div>';
