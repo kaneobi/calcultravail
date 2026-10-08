@@ -202,7 +202,7 @@ function renderRates(){
  const monthlyHtml=ms.length?`<div class="statgrid">${ms.map(m=>`<div class="stat"><div class="muted">${monthFR(m)}</div><div class="value">${money(months[m])}</div></div>`).join('')}</div>`:'<div class="empty">Aucune donnée enregistrée.</div>';
  const grand=Object.values(months).reduce((s,v)=>s+v,0);
  document.getElementById('main').innerHTML=`
- <div class="card"><div class="lock"><h2>🔒 Tarifs & résultats</h2><div class="muted">Cette rubrique est protégée par le code 0611.</div></div></div>
+ <div class="card"><div class="lock"><h2>🔒 Tarifs & résultats</h2><div class="muted">Accès protégé</div></div></div>
  <div class="card">
    <h2>📊 Totaux mensuels</h2>
    ${monthlyHtml}
@@ -228,7 +228,7 @@ function addRate(){
 
 function renderSites(){
  document.getElementById('main').innerHTML=`
- <div class="card"><div class="lock"><h2>🔒 Chantiers</h2><div class="muted">Cette rubrique est protégée par code.</div></div></div>
+ <div class="card"><div class="lock"><h2>🔒 Chantiers</h2><div class="muted">Accès protégé</div></div></div>
  <div class="card"><h2>Ajouter un chantier</h2><label>Nom du chantier</label><input id="sn" placeholder="Ex. Chantier Prades"><button class="btn" style="margin-top:10px" onclick="addSite()">Ajouter au menu</button></div>
  <div class="card"><h2>Mes chantiers disponibles</h2>
  ${db.sites.length?db.sites.map((s,i)=>`<div class="item"><div class="big">🏗️ ${esc(s)}</div><button class="btn red" onclick="db.sites.splice(${i},1);save();renderSites()">×</button></div>`).join(''):'<div class="empty">Aucun chantier enregistré.</div>'}</div>`;
