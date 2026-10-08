@@ -8,388 +8,149 @@
 <meta name="theme-color" content="#f2f2f7">
 <title>Suivi Chantier</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif}
-.app{max-width:780px;margin:auto;padding:calc(env(safe-area-inset-top) + 12px) 14px 40px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-h1{font-size:29px;margin:0}h2{font-size:20px;margin:0 0 12px}
-h3{font-size:16px;margin:0 0 8px}.muted{color:#777;font-size:13px}
-nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:#dddde2;padding:4px;border-radius:14px;margin-bottom:14px}
-nav button{border:0;background:transparent;padding:9px 3px;border-radius:11px;font-size:12px}
-nav button.active{background:#fff;font-weight:700}
-.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:0 1px 4px #0001}
-label{display:block;font-size:12px;color:#666;margin-bottom:5px}
-input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;background:#fff;font-size:16px}
-.btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:650;background:#111;color:#fff}
-.btn.light{background:#e9e9ee;color:#111}.btn.red{background:#ffe6e6;color:#b00020}.btn.green{background:#e7f7ed;color:#17663a}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.work{border:1px solid #e5e5e8;border-radius:14px;padding:11px;margin-bottom:10px;background:#fafafd}
-.workhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.worktitle{font-weight:750}
-.grid4{display:grid;grid-template-columns:1.35fr 1.55fr .65fr .85fr 38px;gap:7px;align-items:end}
-.total{text-align:right;font-size:27px;font-weight:800;margin-top:12px}
-.total small{font-size:13px;color:#777;font-weight:500}
-.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}
-.item:last-child{border-bottom:0}
-.big{font-size:18px;font-weight:750}.money{font-weight:750;white-space:nowrap}
-.empty{text-align:center;padding:20px;color:#777}
-.badge{display:inline-block;padding:4px 8px;border-radius:9px;background:#eee;font-size:11px}
-.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.stat{background:#f7f7fa;border-radius:14px;padding:13px}.stat .value{font-size:21px;font-weight:800;margin-top:4px}
-.site-total{display:flex;justify-content:space-between;padding:8px 0;font-weight:650}
-.credit{background:#fff4e5;border-radius:12px;padding:10px;margin-top:7px}
-.lock{background:#fff3cd;border-radius:14px;padding:14px}
-.modalbg{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
-.modal{background:white;border-radius:18px;padding:18px;width:min(360px,100%);box-shadow:0 10px 40px #0005}
-.modal h2{margin-bottom:10px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111;color:#fff;padding:11px 16px;border-radius:12px;z-index:20;font-size:14px;display:none}
-@media(max-width:600px){.grid4{grid-template-columns:1fr 1fr 72px 78px 36px}.statgrid{grid-template-columns:1fr 1fr}}
+*{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif}.app{max-width:900px;margin:auto;padding:calc(env(safe-area-inset-top) + 12px) 14px 40px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}h1{font-size:29px;margin:0}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.muted{color:#777;font-size:13px}nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:#dddde2;padding:4px;border-radius:14px;margin-bottom:14px}nav button{border:0;background:transparent;padding:9px 3px;border-radius:11px;font-size:12px}nav button.active{background:#fff;font-weight:700}.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:0 1px 4px #0001}label{display:block;font-size:12px;color:#666;margin-bottom:5px}input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;background:#fff;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:650;background:#111;color:#fff}.btn.light{background:#e9e9ee;color:#111}.btn.red{background:#ffe6e6;color:#b00020}.btn.green{background:#e7f7ed;color:#17663a}.btn.blue{background:#e8f0ff;color:#174ea6}.actions{display:flex;gap:8px;flex-wrap:wrap}.work{border:1px solid #e5e5e8;border-radius:14px;padding:11px;margin-bottom:10px;background:#fafafd}.workhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.worktitle{font-weight:750}.grid4{display:grid;grid-template-columns:1.35fr 1.55fr .65fr .85fr 38px;gap:7px;align-items:end}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.total{text-align:right;font-size:27px;font-weight:800;margin-top:12px}.total small{font-size:13px;color:#777;font-weight:500}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}.big{font-size:18px;font-weight:750}.money{font-weight:750;white-space:nowrap}.empty{text-align:center;padding:20px;color:#777}.badge{display:inline-block;padding:4px 8px;border-radius:9px;background:#eee;font-size:11px}.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#f7f7fa;border-radius:14px;padding:13px}.stat .value{font-size:21px;font-weight:800;margin-top:4px}.site-total{display:flex;justify-content:space-between;padding:8px 0;font-weight:650}.credit{background:#fff4e5;border-radius:12px;padding:10px;margin-top:7px}.modalbg{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.modal{background:#fff;border-radius:20px;padding:20px;width:min(430px,100%);box-shadow:0 12px 40px #0004}.toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 15px;border-radius:12px;z-index:30}.login{min-height:80vh;display:flex;align-items:center;justify-content:center}.login .card{width:min(430px,100%)}.topuser{display:flex;align-items:center;gap:8px}.spinner{text-align:center;padding:40px}.danger-note{background:#fff0f0;border-radius:12px;padding:11px;color:#8a0000;font-size:13px}@media(max-width:700px){.grid4{grid-template-columns:1fr 1fr}.grid4>div:nth-child(5){grid-column:2}.grid2{grid-template-columns:1fr}.app{padding-left:10px;padding-right:10px}nav button{font-size:11px}}
 </style>
 </head>
 <body>
 <div class="app">
-<header><h1>Suivi chantier</h1><span class="badge" id="count"></span></header>
-<nav>
-<button class="active" onclick="show('today')">Aujourd'hui</button>
-<button onclick="show('history')">Historique</button>
-<button onclick="requestProtected('rates')">🔒 Tarifs</button>
-<button onclick="requestProtected('sites')">🔒 Chantiers</button>
-<button onclick="show('search')">🔎 Recherche</button>
-</nav>
-<main id="main"></main>
+<header><div><h1>Suivi Chantier</h1><div id="count" class="muted"></div></div><div id="userArea"></div></header>
+<div id="app"></div>
 </div>
 <div id="modal"></div><div id="toast" class="toast"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const K='suivi_chantier_v4', CODE='0611';
-let db=JSON.parse(localStorage.getItem(K)||'null')||{days:{},rates:[],sites:[]};
-let currentDate=new Date().toISOString().slice(0,10), currentPage='today', lines=[];
+const SUPABASE_URL='https://pcbrifwucnmdkxvvqbit.supabase.co';
+const SUPABASE_KEY='sb_publishable_l3pmSSFD60PGIH-Z_vBeeQ_sINP3lzo';
+const {createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
+const LOCAL_KEY='suivi_chantier_v4';
+let session=null, profile=null, isAdmin=false;
+let sites=[], rates=[], credits=[];
+let days={}, currentDate=new Date().toISOString().slice(0,10), currentPage='today', lines=[];
 let undoStack=[];
 
-function save(){localStorage.setItem(K,JSON.stringify(db));updateCount()}
 function money(n){return (Number(n)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
 function dateFR(d){return new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
 function monthFR(m){let [y,mo]=m.split('-');return new Date(Number(y),Number(mo)-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}
-function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;').replaceAll("'","&#39;")}
-function updateCount(){let n=Object.keys(db.days).length;document.getElementById('count').textContent=n+' jour'+(n>1?'s':'')}
+function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.style.display='none',2600)}
+function setCount(){let n=Object.keys(days).length;document.getElementById('count').textContent=n+' jour'+(n>1?'s':'')+(isAdmin?' · administrateur':'')}
 function show(p){currentPage=p;document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('active',['today','history','rates','sites','search'][i]===p));render()}
-function requestProtected(page){
- document.getElementById('modal').innerHTML=`<div class="modalbg"><div class="modal">
- <h2>🔒 Accès protégé</h2><div class="muted" style="margin-bottom:10px">Entre le code pour accéder à cette rubrique.</div>
- <input id="codeInput" type="password" inputmode="numeric" maxlength="4" placeholder="Code">
- <div class="actions" style="margin-top:12px"><button class="btn light" onclick="closeModal()">Annuler</button><button class="btn" onclick="checkCode('${page}')">Valider</button></div>
- </div></div>`;
- document.getElementById('codeInput').focus();
-}
 function closeModal(){document.getElementById('modal').innerHTML=''}
-function checkCode(page){if(document.getElementById('codeInput').value===CODE){closeModal();show(page)}else{toast('Code incorrect');document.getElementById('codeInput').select()}}
-function render(){updateCount();if(currentPage==='today')renderToday();if(currentPage==='history')renderHistory();if(currentPage==='rates')renderRates();if(currentPage==='sites')renderSites();if(currentPage==='search')renderSearch()}
 
+async function init(){
+ document.getElementById('app').innerHTML='<div class="spinner">Connexion à la base de données…</div>';
+ const {data:{session:s}}=await sb.auth.getSession();
+ session=s;
+ if(!session){renderLogin();return}
+ await loadUser();
+ await loadData();
+ render();
+ sb.auth.onAuthStateChange(async (_event,sess)=>{session=sess;if(!sess){profile=null;isAdmin=false;renderLogin()}else{await loadUser();await loadData();render()}});
+}
+async function loadUser(){
+ const {data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+ if(error){console.error(error);toast('Impossible de charger le profil');return}
+ profile=data;isAdmin=data.role==='admin';
+ document.getElementById('userArea').innerHTML=`<div class="topuser"><span class="badge">${isAdmin?'Admin':'Utilisateur'}</span><button class="btn light" style="padding:7px 9px" onclick="logout()">Déconnexion</button></div>`;
+}
+async function loadData(){
+ const s=await sb.from('chantiers').select('*').eq('actif',true).order('nom');
+ if(s.error){console.error(s.error);toast('Erreur chargement chantiers')}else sites=s.data||[];
+ const r=await sb.from('taches').select('*').eq('actif',true).order('nom');
+ if(r.error){console.error(r.error);toast('Erreur chargement tarifs')}else rates=r.data||[];
+ const j=await sb.from('jours').select('*').order('date_travail',{ascending:false});
+ if(j.error){console.error(j.error);toast('Erreur chargement journées');return}
+ const raw=j.data||[]; const ids=raw.map(x=>x.id);
+ let tr=[];
+ if(ids.length){const q=await sb.from('travaux').select('*').in('jour_id',ids).order('created_at');if(q.error){console.error(q.error);toast('Erreur chargement travaux')}else tr=q.data||[]}
+ days={};
+ raw.forEach(d=>{days[d.date_travail]={id:d.id,date:d.date_travail,user_id:d.user_id,lines:[],total:0,created_at:d.created_at}});
+ tr.forEach(x=>{const d=Object.values(days).find(y=>y.id===x.jour_id);if(!d)return;const l={id:x.id,siteId:x.chantier_id,site:(sites.find(s=>s.id===x.chantier_id)||{}).nom||'',rateId:x.tache_id,rate:'',name:x.tache_nom,unit:x.unite,qty:Number(x.quantite)||0,price:Number(x.prix_unitaire)||0,user_id:x.user_id};d.lines.push(l);d.total+=l.qty*l.price});
+ if(isAdmin){const c=await sb.from('avoirs').select('*').order('created_at',{ascending:false});credits=c.data||[]}
+ else credits=[];
+ setCount();
+}
+function renderLogin(){document.getElementById('userArea').innerHTML='';document.getElementById('app').innerHTML=`<div class="login"><div class="card"><h2>🔐 Connexion</h2><div class="muted" style="margin-bottom:14px">Connecte-toi à ton espace Suivi Chantier.</div><label>Email</label><input id="loginEmail" type="email" autocomplete="email" placeholder="ton@email.fr"><div style="height:10px"></div><label>Mot de passe</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Mot de passe"><button class="btn" style="margin-top:14px;width:100%" onclick="login()">Se connecter</button><div id="loginMsg" class="muted" style="margin-top:10px"></div></div></div>`}
+async function login(){const email=document.getElementById('loginEmail').value.trim(),pass=document.getElementById('loginPass').value;const m=document.getElementById('loginMsg');m.textContent='Connexion…';const {error}=await sb.auth.signInWithPassword({email,password:pass});if(error)m.textContent='Connexion impossible : '+error.message}
+async function logout(){await sb.auth.signOut()}
+
+function render(){if(!session)return renderLogin();setCount();if(currentPage==='today')renderToday();if(currentPage==='history')renderHistory();if(currentPage==='rates')renderRates();if(currentPage==='sites')renderSites();if(currentPage==='search')renderSearch()}
+function nav(){return `<nav><button onclick="show('today')">Aujourd’hui</button><button onclick="show('history')">Historique</button>${isAdmin?'<button onclick="show(\'rates\')">🔒 Tarifs</button><button onclick="show(\'sites\')">🔒 Chantiers</button>':'<button disabled style="opacity:.45">🔒 Tarifs</button><button disabled style="opacity:.45">🔒 Chantiers</button>'}<button onclick="show('search')">🔎 Recherche</button></nav>`}
 function renderToday(){
- const day=db.days[currentDate];
- if(day && !lines.length) lines=day.lines.map(x=>({...x}));
- document.getElementById('main').innerHTML=`
- <div class="card">
-   <h2>Journée</h2>
-   <label>Date</label><input type="date" value="${currentDate}" onchange="changeDate(this.value)">
-   <div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.</div>
- </div>
- <div class="card">
-   <h2>Travaux réalisés</h2>
-   <div id="lines"></div>
-   <button class="btn light" onclick="addLine()">＋ Ajouter une tâche / chantier</button>
-   <div class="total"><small>Total journée</small><br><span id="total">0,00 €</span></div>
-   <div class="actions" style="margin-top:13px">
-     <button class="btn" onclick="saveDay()">Enregistrer la journée</button>
-     <button class="btn red" onclick="clearDay()">Effacer</button>
-   </div>
- </div>`;
- renderLines();calc();
-}
-function changeDate(v){currentDate=v;lines=db.days[v]?db.days[v].lines.map(x=>({...x})):[];renderToday()}
-function addLine(){lines.push({site:'',rate:'',name:'',unit:'',qty:'',price:''});renderLines();calc()}
-function renderLines(){
- const box=document.getElementById('lines');if(!box)return;
- if(!lines.length){box.innerHTML='<div class="empty">Aucune tâche. Ajoute une ligne.</div>';return}
- const siteOpts=db.sites.map((s,i)=>`<option value="${i}">${esc(s)}</option>`).join('');
- const rateOpts=db.rates.map((r,i)=>`<option value="${i}">${esc(r.name)} — ${money(r.price)}/${esc(r.unit)}</option>`).join('');
- box.innerHTML=lines.map((l,i)=>`
- <div class="work">
-   <div class="workhead"><span class="worktitle">Travail ${i+1}</span><button class="btn red" style="padding:6px 10px" onclick="deleteLine(${i})">Supprimer</button></div>
-   <div class="grid4">
-     <div><label>Chantier</label><select onchange="lines[${i}].site=this.value"><option value="">Choisir…</option>${siteOpts}</select></div>
-     <div><label>Tâche</label><select onchange="pickRate(${i},this.value)"><option value="">Choisir…</option>${rateOpts}</select></div>
-     <div><label>Quantité</label><input type="number" inputmode="decimal" step="0.01" value="${l.qty}" oninput="lines[${i}].qty=this.value;calc()"></div>
-     <div><label>Prix</label><input type="number" inputmode="decimal" step="0.01" value="${l.price}" oninput="lines[${i}].price=this.value;calc()"></div>
-     <div><button class="btn red" style="padding:10px 8px" onclick="deleteLine(${i})">×</button></div>
-   </div>
-   <div class="muted" style="margin-top:6px">${l.unit?'Unité : '+esc(l.unit):'Sélectionne une tâche pour remplir automatiquement le prix.'}</div>
- </div>`).join('');
- document.querySelectorAll('.work').forEach((w,i)=>{
-   const sels=w.querySelectorAll('select');
-   if(sels[0]){let idx=db.sites.indexOf(lines[i].site);sels[0].value=idx>=0?idx:''}
-   if(sels[1])sels[1].value=lines[i].rate??'';
- });
-}
-function pickRate(i,v){
- lines[i].rate=v;
- if(v!==''){const r=db.rates[Number(v)];lines[i].name=r.name;lines[i].unit=r.unit;lines[i].price=r.price}
- else{lines[i].name='';lines[i].unit='';lines[i].price=''}
- renderLines();calc()
-}
-function deleteLine(i){
- const deleted={type:'line',index:i,data:{...lines[i]},date:currentDate};
- undoStack.push(deleted);lines.splice(i,1);renderLines();calc();toast('Tâche supprimée — bouton Annuler disponible dans Historique');
-}
+ const day=days[currentDate]; if(day&&!lines.length)lines=day.lines.map(x=>({...x}));
+ document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.</div></div><div class="card"><h2>Travaux réalisés</h2><div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche / chantier</button><div class="total"><small>Total journée</small><br><span id="total">0,00 €</span></div><div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button><button class="btn red" onclick="clearDay()">Effacer</button></div></div></main>`;renderLines();calc()}
+function changeDate(v){currentDate=v;lines=days[v]?days[v].lines.map(x=>({...x})):[];renderToday()}
+function addLine(){lines.push({siteId:'',site:'',rateId:'',name:'',unit:'',qty:'',price:''});renderLines();calc()}
+function renderLines(){const box=document.getElementById('lines');if(!box)return;if(!lines.length){box.innerHTML='<div class="empty">Aucune tâche. Ajoute une ligne.</div>';return}const siteOpts=sites.map(s=>`<option value="${s.id}">${esc(s.nom)}</option>`).join('');const rateOpts=rates.map(r=>`<option value="${r.id}">${esc(r.nom)} — ${money(r.prix)}/${esc(r.unite)}</option>`).join('');box.innerHTML=lines.map((l,i)=>`<div class="work"><div class="workhead"><span class="worktitle">Travail ${i+1}</span><button class="btn red" style="padding:6px 10px" onclick="deleteLine(${i})">Supprimer</button></div><div class="grid4"><div><label>Chantier</label><select onchange="lines[${i}].siteId=this.value;lines[${i}].site=(sites.find(s=>s.id===this.value)||{}).nom||''"><option value="">Choisir…</option>${siteOpts}</select></div><div><label>Tâche</label><select onchange="pickRate(${i},this.value)"><option value="">Choisir…</option>${rateOpts}</select></div><div><label>Quantité</label><input type="number" inputmode="decimal" step="0.01" value="${l.qty}" oninput="lines[${i}].qty=this.value;calc()"></div><div><label>Prix</label><input type="number" inputmode="decimal" step="0.01" value="${l.price}" oninput="lines[${i}].price=this.value;calc()"></div><div><button class="btn red" style="padding:10px 8px" onclick="deleteLine(${i})">×</button></div></div><div class="muted" style="margin-top:6px">${l.unit?'Unité : '+esc(l.unit):'Sélectionne une tâche pour remplir automatiquement le prix.'}</div></div>`).join('');document.querySelectorAll('.work').forEach((w,i)=>{const ss=w.querySelectorAll('select');if(ss[0])ss[0].value=lines[i].siteId||'';if(ss[1])ss[1].value=lines[i].rateId||''})}
+function pickRate(i,v){lines[i].rateId=v;if(v){const r=rates.find(x=>x.id===v);if(r){lines[i].name=r.nom;lines[i].unit=r.unite;lines[i].price=r.prix}}else{lines[i].name='';lines[i].unit='';lines[i].price=''}renderLines();calc()}
+function deleteLine(i){undoStack.push({type:'line',index:i,data:{...lines[i]},date:currentDate});lines.splice(i,1);renderLines();calc();toast('Tâche supprimée — annulation disponible dans Historique')}
 function calc(){let t=lines.reduce((s,l)=>s+(Number(l.qty)||0)*(Number(l.price)||0),0);let e=document.getElementById('total');if(e)e.textContent=money(t);return t}
-function saveDay(){
- const clean=lines.filter(l=>l.site||l.name||Number(l.qty)||Number(l.price)).map(l=>({site:l.site||'',name:l.name||'',unit:l.unit||'',qty:Number(l.qty)||0,price:Number(l.price)||0}));
- db.days[currentDate]={lines:clean,total:clean.reduce((s,l)=>s+l.qty*l.price,0)};
- lines=clean.map(x=>({...x}));save();toast('Journée enregistrée');renderToday()
+async function saveDay(){
+ const clean=lines.filter(l=>l.siteId||l.name||Number(l.qty)||Number(l.price));
+ if(clean.some(l=>!l.siteId||!l.name)){toast('Chaque ligne doit avoir un chantier et une tâche');return}
+ let day=days[currentDate];
+ if(day){const oldIds=day.lines.filter(x=>x.id).map(x=>x.id);if(oldIds.length)await sb.from('travaux').delete().in('id',oldIds);}
+ let dayId=day?.id;
+ if(!dayId){const q=await sb.from('jours').insert({date_travail:currentDate,user_id:session.user.id}).select().single();if(q.error){toast('Erreur création journée : '+q.error.message);return}dayId=q.data.id}
+ const payload=clean.map(l=>({jour_id:dayId,chantier_id:l.siteId,tache_id:l.rateId||null,tache_nom:l.name,unite:l.unit||'',quantite:Number(l.qty)||0,prix_unitaire:Number(l.price)||0,user_id:session.user.id}));
+ if(payload.length){const q=await sb.from('travaux').insert(payload);if(q.error){toast('Erreur enregistrement : '+q.error.message);return}}
+ await sb.from('jours').update({updated_at:new Date().toISOString()}).eq('id',dayId);
+ await loadData();lines=days[currentDate]?days[currentDate].lines.map(x=>({...x})):[];toast('Journée enregistrée');renderToday()
 }
-function clearDay(){
- if(!db.days[currentDate]){toast('Aucune journée enregistrée');return}
- if(confirm('Effacer toute cette journée ?')){
-   undoStack.push({type:'day',date:currentDate,data:JSON.parse(JSON.stringify(db.days[currentDate]))});
-   delete db.days[currentDate];lines=[];save();renderToday();toast('Journée supprimée — Annuler dans Historique')
- }
-}
+async function clearDay(){const d=days[currentDate];if(!d){toast('Aucune journée enregistrée');return}if(!confirm('Effacer toute cette journée ?'))return;const q=await sb.from('jours').delete().eq('id',d.id);if(q.error){toast('Impossible de supprimer : '+q.error.message);return}undoStack.push({type:'day',date:currentDate,data:d});await loadData();lines=[];renderToday();toast('Journée supprimée — annulation possible tant que la page reste ouverte')}
 
-function monthlyTotals(){
- const out={};
- Object.entries(db.days).forEach(([d,x])=>{const m=d.slice(0,7);out[m]=(out[m]||0)+x.total});
- return out;
-}
+function monthlyTotals(){const out={};Object.entries(days).forEach(([d,x])=>{const m=d.slice(0,7);out[m]=(out[m]||0)+x.total});return out}
 function renderHistory(){
- const dates=Object.keys(db.days).sort().reverse();
- let html=`<div class="card"><h2>↶ Annuler une suppression</h2>${undoStack.length?`<button class="btn green" onclick="undoLast()">↶ Annuler la dernière suppression</button><div class="muted" style="margin-top:7px">Dernière suppression : ${undoStack[undoStack.length-1].type==='day'?'journée':'tâche'}</div>`:'<div class="muted">Aucune suppression récente à annuler.</div>'}</div>`;
- html+=`<div class="card"><h2>💾 Sauvegarde</h2>
- <div class="muted" style="margin-bottom:10px">Fais régulièrement une sauvegarde de tes données. Le fichier contient tes journées, tâches, tarifs et chantiers.</div>
- <div class="actions">
-   <button class="btn" onclick="exportData()">⬇️ Exporter mes données</button>
-   <button class="btn light" onclick="document.getElementById('importFile').click()">⬆️ Importer une sauvegarde</button>
-   <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importData(this)">
- </div>
- </div>`;
- html+=`<div class="card"><h2>Journées</h2>`;
- html+=dates.length?dates.map(d=>{
-   const bySite={};db.days[d].lines.forEach(l=>bySite[l.site||'Sans chantier']=(bySite[l.site||'Sans chantier']||0)+l.qty*l.price);
-   return `<div style="padding:10px 0;border-bottom:1px solid #eee"><div class="item">
-    <div onclick="editDay('${d}')" style="cursor:pointer"><div class="big">${dateFR(d)}</div><div class="muted">${Object.keys(bySite).length} chantier(s) · ${db.days[d].lines.length} tâche(s)</div></div>
-    <div style="text-align:right"><div class="money">${money(db.days[d].total)}</div><button class="btn light" style="padding:7px 9px;margin-top:6px" onclick="editDay('${d}')">Modifier</button></div>
-   </div>${Object.entries(bySite).map(([s,t])=>`<div class="site-total"><span>🏗️ ${esc(s)}</span><span>${money(t)}</span></div>`).join('')}</div>`
- }).join(''):'<div class="empty">Aucune journée enregistrée.</div>';
- html+='</div>';
- document.getElementById('main').innerHTML=html;
+  const dates=Object.keys(days).sort().reverse();
+  let html=nav()+'<main>';
+  if(undoStack.length){
+    html+='<div class="card"><h2>↶ Annuler une suppression</h2><button class="btn green" onclick="undoLast()">↶ Annuler la dernière suppression</button><div class="muted" style="margin-top:7px">Dernière suppression : '+(undoStack[undoStack.length-1].type==='day'?'journée':'tâche')+'</div></div>';
+  }
+  html+='<div class="card"><h2>💾 Sauvegarde locale</h2><div class="muted" style="margin-bottom:10px">Cette sauvegarde permet aussi de conserver une copie de sécurité de tes données.</div><div class="actions"><button class="btn" onclick="exportData()">⬇️ Exporter mes données</button><button class="btn light" onclick="document.getElementById(\'importFile\').click()">⬆️ Importer une ancienne sauvegarde</button><input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importData(this)"></div></div>';
+  if(isAdmin){
+    html+='<div class="card"><h2>☁️ Migration de l’ancienne application</h2><div class="muted">Si tu as encore ton ancienne sauvegarde JSON issue de la version localStorage, importe-la ici pour envoyer les anciennes journées, tâches et chantiers dans Supabase.</div><div class="danger-note" style="margin-top:10px">À faire une seule fois. Ne lance pas plusieurs fois la même sauvegarde.</div><button class="btn blue" style="margin-top:10px" onclick="document.getElementById(\'migrationFile\').click()">Importer l’ancien fichier JSON vers Supabase</button><input id="migrationFile" type="file" accept=".json,application/json" style="display:none" onchange="migrateOldData(this)"></div>';
+  }
+  html+='<div class="card"><h2>Journées</h2>';
+  if(!dates.length){html+='<div class="empty">Aucune journée enregistrée.</div>'}
+  else{
+    dates.forEach(d=>{
+      const bySite={};
+      days[d].lines.forEach(l=>bySite[l.site||'Sans chantier']=(bySite[l.site||'Sans chantier']||0)+l.qty*l.price);
+      html+='<div style="padding:10px 0;border-bottom:1px solid #eee"><div class="item">';
+      html+='<div onclick="editDay(\''+d+'\')" style="cursor:pointer"><div class="big">'+dateFR(d)+'</div><div class="muted">'+Object.keys(bySite).length+' chantier(s) · '+days[d].lines.length+' tâche(s)'+(isAdmin&&days[d].user_id!==session.user.id?' · autre utilisateur':'')+'</div></div>';
+      html+='<div style="text-align:right"><div class="money">'+money(days[d].total)+'</div><button class="btn light" style="padding:7px 9px;margin-top:6px" onclick="editDay(\''+d+'\')">Modifier</button></div></div>';
+      Object.entries(bySite).forEach(([site,total])=>{html+='<div class="site-total"><span>🏗️ '+esc(site)+'</span><span>'+money(total)+'</span></div>'});
+      html+='</div>';
+    });
+  }
+  html+='</div></main>';
+  document.getElementById('app').innerHTML=html;
 }
-function editDay(d){currentDate=d;lines=db.days[d].lines.map(x=>({...x}));show('today')}
-function undoLast(){
- const a=undoStack.pop();if(!a){toast('Rien à annuler');return}
- if(a.type==='day'){db.days[a.date]=a.data;currentDate=a.date;lines=a.data.lines.map(x=>({...x}))}
- else if(a.type==='line'){
-   if(a.date===currentDate){lines.splice(Math.min(a.index,lines.length),0,a.data)}
-   else{
-     if(db.days[a.date]){db.days[a.date].lines.splice(Math.min(a.index,db.days[a.date].lines.length),0,a.data);db.days[a.date].total=db.days[a.date].lines.reduce((s,l)=>s+l.qty*l.price,0)}
-   }
- }
- save();toast('Suppression annulée');render()
-}
+function editDay(d){if(!days[d])return;if(days[d].user_id!==session.user.id&&!isAdmin){toast('Cette journée ne t’appartient pas');return}currentDate=d;lines=days[d].lines.map(x=>({...x}));show('today')}
+async function undoLast(){const a=undoStack.pop();if(!a){toast('Rien à annuler');return}if(a.type==='line'){lines.splice(Math.min(a.index,lines.length),0,a.data);toast('Tâche remise dans le formulaire — pense à enregistrer la journée')}else{if(!days[a.date]){currentDate=a.date;lines=a.data.lines.map(x=>({...x}));toast('Journée restaurée dans le formulaire — pense à enregistrer');show('today');return}}render()}
 
-function renderRates(){
- const months=monthlyTotals();
- const ms=Object.keys(months).sort().reverse();
- const monthlyHtml=ms.length?`<div class="statgrid">${ms.map(m=>`<div class="stat"><div class="muted">${monthFR(m)}</div><div class="value">${money(months[m])}</div></div>`).join('')}</div>`:'<div class="empty">Aucune donnée enregistrée.</div>';
- const grand=Object.values(months).reduce((s,v)=>s+v,0);
- document.getElementById('main').innerHTML=`
- <div class="card"><div class="lock"><h2>🔒 Tarifs & résultats</h2><div class="muted">Accès protégé</div></div></div>
- <div class="card">
-   <h2>📊 Totaux mensuels</h2>
-   ${monthlyHtml}
-   <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee">
-     <div class="muted">Total cumulé</div><div class="big">${money(grand)}</div>
-   </div>
- </div>
- <div class="card">
-  <h2>Ajouter une tâche et son tarif</h2>
-  <label>Nom de la tâche</label><input id="rn" placeholder="Ex. Enduit monocouche">
-  <div style="height:9px"></div>
-  <div class="statgrid"><div><label>Unité</label><input id="ru" placeholder="m², ml, m³…"></div><div><label>Prix unitaire (€)</label><input id="rp" type="number" inputmode="decimal" step="0.01" placeholder="14"></div></div>
-  <button class="btn" style="margin-top:10px" onclick="addRate()">Ajouter au menu</button>
- </div>
- <div class="card"><h2>Mes tâches disponibles dans le menu</h2>
- ${db.rates.length?db.rates.map((r,i)=>`<div class="item"><div><div class="big">${esc(r.name)}</div><div class="muted">${money(r.price)} / ${esc(r.unit)}</div></div><button class="btn red" onclick="db.rates.splice(${i},1);save();renderRates()">×</button></div>`).join(''):'<div class="empty">Aucune tâche enregistrée.</div>'}</div>`;
-}
-function addRate(){
- const n=document.getElementById('rn').value.trim(),u=document.getElementById('ru').value.trim(),p=Number(document.getElementById('rp').value);
- if(!n||!u||p<=0){toast('Renseigne la tâche, l’unité et le prix.');return}
- db.rates.push({name:n,unit:u,price:p});save();renderRates();toast('Tâche ajoutée au menu')
-}
+function renderRates(){const months=monthlyTotals(),ms=Object.keys(months).sort().reverse();const monthlyHtml=ms.length?`<div class="statgrid">${ms.map(m=>`<div class="stat"><div class="muted">${monthFR(m)}</div><div class="value">${money(months[m])}</div></div>`).join('')}</div>`:'<div class="empty">Aucune donnée.</div>';const grand=Object.values(months).reduce((s,v)=>s+v,0);document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>🔒 Tarifs & résultats</h2><div class="muted">Accès administrateur</div></div><div class="card"><h2>📊 Totaux mensuels</h2>${monthlyHtml}<div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee"><div class="muted">Total cumulé</div><div class="big">${money(grand)}</div></div></div><div class="card"><h2>Ajouter une tâche et son tarif</h2><label>Nom de la tâche</label><input id="rn" placeholder="Ex. Enduit monocouche"><div style="height:9px"></div><div class="grid2"><div><label>Unité</label><input id="ru" placeholder="m², ml, m³…"></div><div><label>Prix unitaire (€)</label><input id="rp" type="number" step="0.01" placeholder="14"></div></div><button class="btn" style="margin-top:10px" onclick="addRate()">Ajouter au menu</button></div><div class="card"><h2>Mes tâches disponibles</h2>${rates.length?rates.map(r=>`<div class="item"><div><div class="big">${esc(r.nom)}</div><div class="muted">${money(r.prix)} / ${esc(r.unite)}</div></div><button class="btn red" onclick="deleteRate('${r.id}')">×</button></div>`).join(''):'<div class="empty">Aucune tâche enregistrée.</div>'}</div>${isAdmin?creditsHtml():''}</main>`}
+async function addRate(){const n=document.getElementById('rn').value.trim(),u=document.getElementById('ru').value.trim(),p=Number(document.getElementById('rp').value);if(!n||!u||p<=0){toast('Renseigne la tâche, l’unité et le prix.');return}const q=await sb.from('taches').insert({nom:n,unite:u,prix:p,created_by:session.user.id}).select().single();if(q.error){toast('Erreur : '+q.error.message);return}await loadData();renderRates();toast('Tâche ajoutée')}
+async function deleteRate(id){if(!confirm('Désactiver cette tâche ? Elle ne sera plus proposée pour les nouvelles saisies.'))return;const q=await sb.from('taches').update({actif:false}).eq('id',id);if(q.error)toast('Erreur : '+q.error.message);else{await loadData();renderRates()}}
+function creditsHtml(){const total=credits.reduce((s,c)=>s+Number(c.montant||0),0);return `<div class="card"><h2>💶 Avoirs</h2><div class="muted">Total des avoirs enregistrés : <b>${money(total)}</b></div><div class="grid2" style="margin-top:10px"><div><label>Chantier</label><select id="creditSite"><option value="">Choisir…</option>${sites.map(s=>`<option value="${s.id}">${esc(s.nom)}</option>`).join('')}</select></div><div><label>Montant (€)</label><input id="creditAmount" type="number" step="0.01"></div></div><label style="margin-top:9px">Commentaire</label><input id="creditComment" placeholder="Ex. reprise, remise, erreur…"><button class="btn" style="margin-top:10px" onclick="addCredit()">Ajouter l’avoir</button>${credits.map(c=>`<div class="credit"><b>${esc((sites.find(s=>s.id===c.chantier_id)||{}).nom||'Chantier')}</b> — ${money(c.montant)}<div class="muted">${esc(c.commentaire||'')}</div></div>`).join('')}</div>`}
+async function addCredit(){const sid=document.getElementById('creditSite').value,amount=Number(document.getElementById('creditAmount').value),comment=document.getElementById('creditComment').value.trim();if(!sid||amount<=0){toast('Choisis un chantier et un montant.');return}const q=await sb.from('avoirs').insert({chantier_id:sid,montant:amount,commentaire:comment,user_id:session.user.id});if(q.error)toast('Erreur : '+q.error.message);else{await loadData();renderRates();toast('Avoir ajouté')}}
 
-function renderSites(){
- document.getElementById('main').innerHTML=`
- <div class="card"><div class="lock"><h2>🔒 Chantiers</h2><div class="muted">Accès protégé</div></div></div>
- <div class="card"><h2>Ajouter un chantier</h2><label>Nom du chantier</label><input id="sn" placeholder="Ex. Chantier Prades"><button class="btn" style="margin-top:10px" onclick="addSite()">Ajouter au menu</button></div>
- <div class="card"><h2>Mes chantiers disponibles</h2>
- ${db.sites.length?db.sites.map((s,i)=>`<div class="item"><div class="big">🏗️ ${esc(s)}</div><button class="btn red" onclick="db.sites.splice(${i},1);save();renderSites()">×</button></div>`).join(''):'<div class="empty">Aucun chantier enregistré.</div>'}</div>`;
-}
-function addSite(){let s=document.getElementById('sn').value.trim();if(!s)return;if(!db.sites.includes(s))db.sites.push(s);save();renderSites();toast('Chantier ajouté au menu')}
+function renderSites(){document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>🔒 Chantiers</h2><div class="muted">Accès administrateur</div></div><div class="card"><h2>Ajouter un chantier</h2><label>Nom du chantier</label><input id="sn" placeholder="Ex. Chantier Prades"><button class="btn" style="margin-top:10px" onclick="addSite()">Ajouter au menu</button></div><div class="card"><h2>Chantiers disponibles</h2>${sites.length?sites.map(s=>`<div class="item"><div class="big">🏗️ ${esc(s.nom)}</div><button class="btn red" onclick="deleteSite('${s.id}')">×</button></div>`).join(''):'<div class="empty">Aucun chantier enregistré.</div>'}</div></main>`}
+async function addSite(){const n=document.getElementById('sn').value.trim();if(!n)return;if(sites.some(s=>s.nom.toLowerCase()===n.toLowerCase())){toast('Ce chantier existe déjà');return}const q=await sb.from('chantiers').insert({nom:n,created_by:session.user.id}).select().single();if(q.error)toast('Erreur : '+q.error.message);else{await loadData();renderSites();toast('Chantier ajouté')}}
+async function deleteSite(id){if(!confirm('Désactiver ce chantier ? Les anciennes lignes resteront conservées.'))return;const q=await sb.from('chantiers').update({actif:false}).eq('id',id);if(q.error)toast('Erreur : '+q.error.message);else{await loadData();renderSites()}}
 
+function exportData(){const backup={app:'Suivi Chantier',version:5,exportedAt:new Date().toISOString(),data:{days,rates,sites}};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='suivi-chantier-sauvegarde-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('Sauvegarde exportée')}
+function importData(input){const f=input.files?.[0];if(!f)return;const reader=new FileReader();reader.onload=e=>{try{const p=JSON.parse(e.target.result),d=p.data||p;if(!d||!d.days)throw 0;localStorage.setItem(LOCAL_KEY,JSON.stringify({days:d.days,rates:d.rates||[],sites:d.sites||[]}));toast('Sauvegarde locale conservée sur ce PC. Pour la mettre en ligne, utilise la migration ci-dessous.')}catch{alert('Fichier invalide.')}finally{input.value=''}};reader.readAsText(f)}
+async function migrateOldData(input){const f=input.files?.[0];if(!f)return;try{const p=JSON.parse(await f.text()),d=p.data||p;if(!d?.days)throw new Error('Format invalide');if(!confirm('Importer cet ancien historique dans Supabase ? Ne lance cette opération qu’une seule fois.'))return;toast('Migration en cours…');let siteMap=new Map(sites.map(s=>[s.nom.toLowerCase(),s.id]));for(const name of d.sites||[]){if(siteMap.has(String(name).toLowerCase()))continue;const q=await sb.from('chantiers').insert({nom:String(name),created_by:session.user.id}).select().single();if(q.data){siteMap.set(String(name).toLowerCase(),q.data.id)}}let rateMap=new Map(rates.map(r=>[r.name.toLowerCase(),r.id]));for(const r of d.rates||[]){if(rateMap.has(String(r.name).toLowerCase()))continue;const q=await sb.from('taches').insert({nom:r.name,unite:r.unit||'u',prix:Number(r.price)||0,created_by:session.user.id}).select().single();if(q.data)rateMap.set(String(r.name).toLowerCase(),q.data.id)}await loadData();siteMap=new Map(sites.map(s=>[s.nom.toLowerCase(),s.id]));rateMap=new Map(rates.map(r=>[r.nom.toLowerCase(),r.id]));let count=0;for(const [date,oldDay] of Object.entries(d.days||{})){const existing=days[date];if(existing)continue;const q=await sb.from('jours').insert({date_travail:date,user_id:session.user.id}).select().single();if(q.error||!q.data)continue;const payload=(oldDay.lines||[]).filter(l=>l.site||l.name||Number(l.qty)||Number(l.price)).map(l=>({jour_id:q.data.id,chantier_id:siteMap.get(String(l.site||'').toLowerCase()),tache_id:rateMap.get(String(l.name||'').toLowerCase())||null,tache_nom:l.name||'Tâche libre',unite:l.unit||'u',quantite:Number(l.qty)||0,prix_unitaire:Number(l.price)||0,user_id:session.user.id})).filter(x=>x.chantier_id);if(payload.length){await sb.from('travaux').insert(payload);count++}}await loadData();toast('Migration terminée : '+count+' journée(s) importée(s)');render()}catch(e){console.error(e);alert('Migration impossible : '+e.message)}finally{input.value=''}}
 
-function exportData(){
- const backup={
-   app:"Suivi Chantier",
-   version:4,
-   exportedAt:new Date().toISOString(),
-   data:db
- };
- const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- const d=new Date().toISOString().slice(0,10);
- a.href=url;a.download="suivi-chantier-sauvegarde-"+d+".json";
- document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
- toast("Sauvegarde exportée");
-}
-function importData(input){
- const file=input.files&&input.files[0];
- if(!file)return;
- const reader=new FileReader();
- reader.onload=function(e){
-   try{
-     const parsed=JSON.parse(e.target.result);
-     const imported=parsed.data||parsed;
-     if(!imported || typeof imported!=="object" || !imported.days || !Array.isArray(imported.rates) || !Array.isArray(imported.sites)){
-       throw new Error("Format invalide");
-     }
-     if(!confirm("Importer cette sauvegarde ? Les données actuellement présentes seront remplacées."))return;
-     db={
-       days:imported.days||{},
-       rates:imported.rates||[],
-       sites:imported.sites||[]
-     };
-     localStorage.setItem(K,JSON.stringify(db));
-     currentDate=new Date().toISOString().slice(0,10);
-     lines=db.days[currentDate]?db.days[currentDate].lines.map(x=>({...x})):[];
-     toast("Sauvegarde importée");
-     render();
-   }catch(err){
-     alert("Impossible d'importer cette sauvegarde. Vérifie que le fichier provient de Suivi Chantier.");
-   }finally{
-     input.value="";
-   }
- };
- reader.readAsText(file);
-}
+function allRecords(){const out=[];Object.entries(days).forEach(([date,day])=>day.lines.forEach((l,idx)=>out.push({...l,date,lineIndex:idx,dayTotal:day.total,user_id:day.user_id})));return out}
+function renderSearch(){const years=[...new Set(Object.keys(days).map(d=>d.slice(0,4)))].sort().reverse(),currentYear=years[0]||String(new Date().getFullYear()),yearOptions=years.map(y=>`<option value="${y}">${y}</option>`).join(''),siteOptions=sites.map(s=>`<option value="${esc(s.nom)}">${esc(s.nom)}</option>`).join(''),taskOptions=rates.map(r=>`<option value="${esc(r.nom)}">${esc(r.nom)}</option>`).join('');document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>🔎 Rechercher des travaux</h2>${isAdmin?'<div class="muted" style="margin-bottom:10px">En administrateur, tu vois les travaux de tous les utilisateurs.</div>':''}<div class="grid2"><div><label>Date exacte</label><input id="qDate" type="date"></div><div><label>Chantier</label><select id="qSite"><option value="">Tous les chantiers</option>${siteOptions}</select></div></div><div class="grid2" style="margin-top:9px"><div><label>Date de début</label><input id="qFrom" type="date"></div><div><label>Date de fin</label><input id="qTo" type="date"></div></div><div style="margin-top:9px"><label>Tâche</label><select id="qTask"><option value="">Toutes les tâches</option>${taskOptions}</select></div><div class="actions" style="margin-top:12px"><button class="btn" onclick="runSearch()">Rechercher</button><button class="btn light" onclick="clearSearch()">Réinitialiser</button></div></div><div id="searchResults"></div><div class="card"><h2>📊 Total annuel par tâche</h2><div class="grid2"><div><label>Année</label><select id="statYear">${yearOptions||`<option>${currentYear}</option>`}</select></div><div><label>Tâche</label><select id="statTask"><option value="">Toutes les tâches</option>${taskOptions}</select></div></div><div style="margin-top:10px"><label>Chantier</label><select id="statSite"><option value="">Tous les chantiers</option>${siteOptions}</select></div><button class="btn" style="margin-top:12px" onclick="runStats()">Calculer</button><div id="statsResults" style="margin-top:12px"></div></div></main>`;runSearch();runStats()}
+function runSearch(){const exact=document.getElementById('qDate')?.value||'',from=document.getElementById('qFrom')?.value||'',to=document.getElementById('qTo')?.value||'',site=document.getElementById('qSite')?.value||'',task=document.getElementById('qTask')?.value||'';let rows=allRecords().filter(r=>(!exact||r.date===exact)&&(!from||r.date>=from)&&(!to||r.date<=to)&&(!site||r.site===site)&&(!task||r.name===task));rows.sort((a,b)=>b.date.localeCompare(a.date));const total=rows.reduce((s,r)=>s+r.qty*r.price,0);let box=document.getElementById('searchResults');if(!box)return;box.innerHTML=`<div class="card"><h2>Résultats</h2><div class="statgrid"><div class="stat"><div class="muted">Lignes trouvées</div><div class="value">${rows.length}</div></div><div class="stat"><div class="muted">Montant total</div><div class="value">${money(total)}</div></div></div>${rows.length?rows.map(r=>`<div class="item"><div onclick="editDay('${r.date}')" style="cursor:pointer"><div class="big">${esc(r.name||'Tâche libre')}</div><div class="muted">${dateFR(r.date)} · 🏗️ ${esc(r.site||'Sans chantier')}</div><div class="muted">${r.qty} ${esc(r.unit||'')} × ${money(r.price)}</div></div><div class="money">${money(r.qty*r.price)}</div></div>`).join(''):'<div class="empty">Aucun résultat.</div>'}</div>`}
+function clearSearch(){['qDate','qFrom','qTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});['qSite','qTask'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});runSearch()}
+function runStats(){const year=document.getElementById('statYear')?.value||String(new Date().getFullYear()),task=document.getElementById('statTask')?.value||'',site=document.getElementById('statSite')?.value||'',rows=allRecords().filter(r=>r.date.startsWith(year)&&(!task||r.name===task)&&(!site||r.site===site)),groups={};rows.forEach(r=>{const key=r.name||'Tâche libre';if(!groups[key])groups[key]={qty:0,total:0,days:new Set(),byMonth:{}};groups[key].qty+=r.qty;groups[key].total+=r.qty*r.price;groups[key].days.add(r.date);const m=r.date.slice(0,7);groups[key].byMonth[m]=(groups[key].byMonth[m]||0)+r.qty*r.price});const grandQty=rows.reduce((s,r)=>s+r.qty,0),grandTotal=rows.reduce((s,r)=>s+r.qty*r.price,0),box=document.getElementById('statsResults');if(!box)return;const names=Object.keys(groups).sort();box.innerHTML=names.length?`<div class="statgrid"><div class="stat"><div class="muted">Quantité totale</div><div class="value">${grandQty.toLocaleString('fr-FR')}</div></div><div class="stat"><div class="muted">Montant total</div><div class="value">${money(grandTotal)}</div></div></div>${names.map(n=>`<div class="item"><div><div class="big">${esc(n)}</div><div class="muted">${groups[n].qty.toLocaleString('fr-FR')} unité(s) · ${groups[n].days.size} jour(s)</div></div><div class="money">${money(groups[n].total)}</div></div>`).join('')}<div style="margin-top:10px"><h3>Détail mensuel</h3>${Object.entries(groups).map(([n,g])=>`<div style="margin-bottom:12px"><div class="big">${esc(n)}</div>${Object.keys(g.byMonth).sort().map(m=>`<div class="site-total"><span>${monthFR(m)}</span><span>${money(g.byMonth[m])}</span></div>`).join('')}</div>`).join('')}</div>`:'<div class="empty">Aucune donnée pour cette sélection.</div>'}
 
-
-function renderSearch(){
- const years=[...new Set(Object.keys(db.days).map(d=>d.slice(0,4)))].sort().reverse();
- const currentYear=years[0]||String(new Date().getFullYear());
- const yearOptions=years.map(y=>`<option value="${y}">${y}</option>`).join('');
- const siteOptions=db.sites.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
- const taskOptions=db.rates.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
- document.getElementById('main').innerHTML=`
- <div class="card">
-   <h2>🔎 Rechercher des travaux</h2>
-   <div class="statgrid">
-    <div><label>Date exacte</label><input id="qDate" type="date"></div>
-    <div><label>Chantier</label><select id="qSite"><option value="">Tous les chantiers</option>${siteOptions}</select></div>
-   </div>
-   <div class="statgrid" style="margin-top:9px">
-    <div><label>Date de début</label><input id="qFrom" type="date"></div>
-    <div><label>Date de fin</label><input id="qTo" type="date"></div>
-   </div>
-   <div style="margin-top:9px"><label>Tâche</label><select id="qTask"><option value="">Toutes les tâches</option>${taskOptions}</select></div>
-   <div class="actions" style="margin-top:12px">
-    <button class="btn" onclick="runSearch()">Rechercher</button>
-    <button class="btn light" onclick="clearSearch()">Réinitialiser</button>
-   </div>
- </div>
- <div id="searchResults"></div>
- <div class="card">
-   <h2>📊 Total annuel par tâche</h2>
-   <div class="grid2">
-    <div><label>Année</label><select id="statYear">${yearOptions||`<option>${currentYear}</option>`}</select></div>
-    <div><label>Tâche</label><select id="statTask"><option value="">Toutes les tâches</option>${taskOptions}</select></div>
-   </div>
-   <div style="margin-top:10px"><label>Chantier (facultatif)</label><select id="statSite"><option value="">Tous les chantiers</option>${siteOptions}</select></div>
-   <button class="btn" style="margin-top:12px" onclick="runStats()">Calculer</button>
-   <div id="statsResults" style="margin-top:12px"></div>
- </div>`;
- runSearch();
- runStats();
-}
-function allRecords(){
- const out=[];
- Object.entries(db.days).forEach(([date,day])=>{
-  day.lines.forEach((l,idx)=>out.push({...l,date,lineIndex:idx,dayTotal:day.total}));
- });
- return out;
-}
-function runSearch(){
- const exact=document.getElementById('qDate')?.value||'';
- const from=document.getElementById('qFrom')?.value||'';
- const to=document.getElementById('qTo')?.value||'';
- const site=document.getElementById('qSite')?.value||'';
- const task=document.getElementById('qTask')?.value||'';
- let rows=allRecords().filter(r=>
-   (!exact||r.date===exact)&&
-   (!from||r.date>=from)&&
-   (!to||r.date<=to)&&
-   (!site||r.site===site)&&
-   (!task||r.name===task)
- );
- rows.sort((a,b)=>b.date.localeCompare(a.date));
- const total=rows.reduce((s,r)=>s+r.qty*r.price,0);
- const qty=rows.reduce((s,r)=>s+r.qty,0);
- let box=document.getElementById('searchResults');if(!box)return;
- box.innerHTML=`<div class="card"><h2>Résultats</h2>
- <div class="statgrid">
-  <div class="stat"><div class="muted">Lignes trouvées</div><div class="value">${rows.length}</div></div>
-  <div class="stat"><div class="muted">Montant total</div><div class="value">${money(total)}</div></div>
- </div>
- ${rows.length?rows.map(r=>`<div class="item">
-  <div onclick="editDay('${r.date}')" style="cursor:pointer">
-   <div class="big">${esc(r.name||'Tâche libre')}</div>
-   <div class="muted">${dateFR(r.date)} · 🏗️ ${esc(r.site||'Sans chantier')}</div>
-   <div class="muted">${r.qty} ${esc(r.unit||'')} × ${money(r.price)}</div>
-  </div>
-  <div class="money">${money(r.qty*r.price)}</div>
- </div>`).join(''):'<div class="empty">Aucun résultat.</div>'}
- </div>`;
-}
-function clearSearch(){
- ['qDate','qFrom','qTo'].forEach(id=>{let e=document.getElementById(id);if(e)e.value=''});
- ['qSite','qTask'].forEach(id=>{let e=document.getElementById(id);if(e)e.value=''});
- runSearch();
-}
-function runStats(){
- const year=document.getElementById('statYear')?.value||String(new Date().getFullYear());
- const task=document.getElementById('statTask')?.value||'';
- const site=document.getElementById('statSite')?.value||'';
- const rows=allRecords().filter(r=>r.date.startsWith(year)&&(!task||r.name===task)&&(!site||r.site===site));
- const groups={};
- rows.forEach(r=>{
-   const key=r.name||'Tâche libre';
-   if(!groups[key])groups[key]={qty:0,total:0,days:new Set(),byMonth:{}};
-   groups[key].qty+=r.qty;groups[key].total+=r.qty*r.price;groups[key].days.add(r.date);
-   const m=r.date.slice(0,7);groups[key].byMonth[m]=(groups[key].byMonth[m]||0)+r.qty*r.price;
- });
- const grandQty=rows.reduce((s,r)=>s+r.qty,0),grandTotal=rows.reduce((s,r)=>s+r.qty*r.price,0);
- let box=document.getElementById('statsResults');if(!box)return;
- const names=Object.keys(groups).sort();
- box.innerHTML=names.length?`
- <div class="statgrid">
-  <div class="stat"><div class="muted">Quantité totale</div><div class="value">${grandQty.toLocaleString('fr-FR')}</div></div>
-  <div class="stat"><div class="muted">Montant total</div><div class="value">${money(grandTotal)}</div></div>
- </div>
- ${names.map(n=>`<div class="item"><div><div class="big">${esc(n)}</div><div class="muted">${groups[n].qty.toLocaleString('fr-FR')} unité(s) · ${groups[n].days.size} jour(s)</div></div><div class="money">${money(groups[n].total)}</div></div>`).join('')}
- <div style="margin-top:10px"><h3>Détail mensuel</h3>${Object.entries(groups).map(([n,g])=>`<div style="margin-bottom:12px"><div class="big">${esc(n)}</div>${Object.keys(g.byMonth).sort().map(m=>`<div class="site-total"><span>${monthFR(m)}</span><span>${money(g.byMonth[m])}</span></div>`).join('')}</div>`).join('')}</div>
- `:'<div class="empty">Aucune donnée pour cette sélection.</div>';
-}
-
-updateCount();render();
+init();
 </script>
 </body>
 </html>
