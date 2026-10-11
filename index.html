@@ -326,7 +326,7 @@ function sendShareEmail(){
   const day=days[shareDate],selected=day.lines.filter(l=>shareSelected.includes(l.site||'Sans chantier'));
   const bySite={};selected.forEach(l=>{const name=l.site||'Sans chantier';(bySite[name]||(bySite[name]=[])).push(l)});
   const body=['Bonjour,','',`Voici le compte rendu du ${dateFR(shareDate)} :`,''];
-  Object.entries(bySite).forEach(([site,items])=>{body.push(`CHANTIER : ${site}`);items.forEach(l=>{let line=`• ${l.name||'Tâche libre'} — ${l.qty} ${l.unit||''}`.trim();if(l.remarque)line+=`\n  Remarque : ${l.remarque}`;if(isAdmin)line+=`\n  Montant : ${money((Number(l.qty)||0)*(Number(l.price)||0))}`;body.push(line)});if(isAdmin){const siteTotal=items.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);body.push(`Total : ${money(siteTotal)}`)}body.push('')});
+  Object.entries(bySite).forEach(([site,items])=>{body.push(`🟩 CHANTIER : ${site}`,'────────────────────────');items.forEach(l=>{let line=`• ${l.name||'Tâche libre'} — ${l.qty} ${l.unit||''}`.trim();if(l.remarque)line+=`\n  Remarque : ${l.remarque}`;if(isAdmin)line+=`\n  Montant : ${money((Number(l.qty)||0)*(Number(l.price)||0))}`;body.push(line)});if(isAdmin){const siteTotal=items.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);body.push(`🟦 TOTAL : ${money(siteTotal)}`)}body.push('')});
   body.push('Cordialement,','Martin');
   const subject=`Compte rendu chantier — ${new Date(shareDate+'T12:00:00').toLocaleDateString('fr-FR')}`;
   window.location.href=`mailto:${encodeURIComponent(shareRecipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.join('\n'))}`;
