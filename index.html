@@ -355,7 +355,7 @@ function sendShareEmail(){
   const selected=shareGroupedTasks();
   const bySite={};selected.forEach(g=>{(bySite[g.site]||(bySite[g.site]=[])).push(g)});
   const period=dates.length===1?dateFR(dates[0]):`${dateFR(dates[0])} au ${dateFR(dates[dates.length-1])}`;
-  const body=['Bonjour,','',`Voici le compte rendu du ${period}. Les quantités des mêmes tâches sont cumulées sur la période.`,''];
+  const body=['Bonjour,','',`Voici le compte rendu du ${period}.`,''];
   Object.entries(bySite).forEach(([site,items])=>{body.push(`CHANTIER : ${site}`);items.forEach(g=>{let line=`• ${g.name} — Quantité cumulée : ${g.qty} ${g.unit}`.trim();if(g.remarks.length)line+=`\n  Remarques : ${g.remarks.join(' | ')}`;if(isAdmin)line+=`\n  Montant total : ${money(g.total)}`;body.push(line)});body.push('')});
   if(isAdmin){const total=selected.reduce((sum,g)=>sum+g.total,0);body.push(`Total sélectionné : ${money(total)}`,'')}
   body.push('Cordialement,','Martin');
@@ -472,4 +472,5 @@ init();
 </script>
 </body>
 </html>
+
 
