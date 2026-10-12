@@ -24,10 +24,9 @@
 .picker-option.selected{background:#e8f0ff;font-weight:700}
 .picker-empty{padding:10px;color:#777;font-size:13px}
 @media(max-width:700px){.picker-menu{min-width:0;width:max(100%,220px);max-width:calc(100vw - 40px)}.picker-options{max-height:200px}}
-.entry-card{border:1px solid #dce7ff;background:linear-gradient(145deg,#fff,#f7f9ff)}.quick-head{display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px}.quick-head h3{margin:0}.task-search{margin-bottom:9px}.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:7px;margin-top:8px}.quick-task-wrap{position:relative}.quick-task{width:100%;border:1px solid #e1e5ef;border-radius:12px;background:#fff;padding:10px 32px 10px 10px;text-align:left;min-height:55px;color:#111}.quick-task:active{transform:scale(.98);background:#edf3ff}.quick-task span,.quick-task small{display:block}.quick-task span{font-weight:700;font-size:13px}.quick-task small{color:#777;margin-top:4px}.favorite-toggle{position:absolute;right:5px;top:5px;border:0;background:#f4f4f7;border-radius:8px;color:#d34a68;width:25px;height:25px;font-size:17px;line-height:1}.workhead{display:flex;flex-direction:column;gap:5px;align-items:stretch;text-align:center}.worktitle{align-self:flex-start}.site-pill{display:block;width:100%;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:20px;line-height:1.25;font-weight:750;color:#111;background:transparent;border-radius:0;padding:2px 0 8px}.task-row{display:grid;gap:8px;align-items:start}.task-row.admin{grid-template-columns:minmax(0,1.4fr) minmax(0,.85fr) minmax(0,.85fr) 42px}.task-row.worker{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 42px}.quantity-hint{margin:4px 0 0}.qty-control{display:flex;gap:5px;align-items:center}.qty-control input{min-width:0;text-align:center;padding:10px 5px}.qty-step{height:42px;min-width:38px;border:0;border-radius:10px;background:#e9e9ee;font-size:22px;font-weight:700}.delete-task{padding:9px 12px;height:42px;align-self:end}@media(max-width:700px){.task-row.admin,.task-row.worker{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.task-row>div:first-child{grid-column:1/-1}.delete-task{grid-column:2;justify-self:end}.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 </style>
-<style>.history-worker{font-size:11px;font-weight:400;opacity:.65;margin-left:5px;white-space:nowrap}.history-date{background:#e8f0ff;border-left:4px solid #2864dc;border-radius:10px;padding:9px 12px;color:#173b78}.history-date .big{color:#173b78}.history-date .muted{color:#385985}.history-sites{margin-top:7px}.history-sites .site-total{background:#f3f6f2;border-radius:8px;padding:8px 10px;margin-top:5px}.share-site-title{color:#23613b;background:#eaf5ed;border-left:4px solid #398354;border-radius:9px;padding:9px 11px;margin-bottom:9px}.share-site-total{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:10px 12px;background:#e8f0ff;border-top:2px solid #2864dc;border-radius:0 0 10px 10px;color:#173b78}</style></head>
+<style>.history-worker{font-size:11px;font-weight:400;opacity:.65;margin-left:5px;white-space:nowrap}</style></head>
 <body>
 <div class="app">
 <header><div><h1>Suivi Chantier</h1><div id="count" class="muted"></div></div><div id="userArea"></div></header>
@@ -46,15 +45,8 @@ let sites=[], rates=[], credits=[], profiles=[];
 let days={}, currentDate=new Date().toISOString().slice(0,10), currentPage='today', lines=[];
 const SHARE_EMAILS_KEY='suivi_chantier_share_emails_v1';
 function savedShareEmails(){try{const value=JSON.parse(localStorage.getItem(SHARE_EMAILS_KEY)||'[]');return Array.isArray(value)?value.filter(x=>typeof x==='string'):[]}catch{return []}}
-let shareDate='',shareRecipient=savedShareEmails()[0]||'',shareSelected=[];
+let shareDate='',shareStartDate='',shareEndDate='',shareRecipient=savedShareEmails()[0]||'',shareSelected=[];
 let undoStack=[];
-let entrySiteId='', taskSearch='';
-const TASK_RECENTS_KEY='suivi_chantier_task_recents_v1';
-const TASK_FAVORITES_KEY='suivi_chantier_task_favorites_v1';
-function recentTaskIds(){try{return JSON.parse(localStorage.getItem(TASK_RECENTS_KEY)||'[]')}catch{return []}}
-function rememberTask(id){if(!id)return;const a=[id,...recentTaskIds().filter(x=>x!==id)].slice(0,8);localStorage.setItem(TASK_RECENTS_KEY,JSON.stringify(a))}
-function favoriteTaskIds(){try{return JSON.parse(localStorage.getItem(TASK_FAVORITES_KEY)||'[]')}catch{return []}}
-function toggleFavoriteTask(id){const a=favoriteTaskIds(),next=a.includes(id)?a.filter(x=>x!==id):[id,...a];localStorage.setItem(TASK_FAVORITES_KEY,JSON.stringify(next));renderQuickTasks()}
 
 function money(n){return (Number(n)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
 function dateFR(d){return new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
@@ -137,36 +129,38 @@ function nav(){return `<nav><button data-page="today" onclick="show('today')">Au
 function renderToday(){
  const day=days[currentDate]; if(day&&!lines.length&&(isAdmin||day.lines.every(l=>l.user_id===session.user.id)))lines=day.lines.map(x=>({...x}));
  const editingExisting=!isAdmin && !!day && lines.length>0;
- if(!sites.some(s=>s.id===entrySiteId))entrySiteId=lines.at(-1)?.siteId||sites[0]?.id||'';
- document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" ${editingExisting?'disabled':''} onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Choisis le chantier une fois, puis ajoute toutes ses tâches. Tu peux changer de chantier pour démarrer une autre série.${editingExisting?' Tu modifies uniquement tes propres lignes.':''}</div></div><div class="card entry-card"><h2>Chantier</h2><div class="picker" id="entrySitePicker"><button type="button" class="picker-trigger ${entrySiteId?'':'placeholder'}" onclick="toggleEntrySite()">${esc(sites.find(s=>s.id===entrySiteId)?.nom||'Choisir un chantier…')}</button><div class="picker-menu"><input class="picker-search" type="search" placeholder="Rechercher un chantier…" aria-label="Rechercher un chantier" oninput="filterPicker(this)" onclick="event.stopPropagation()"><div class="picker-options">${sites.map(s=>`<button type="button" class="picker-option ${s.id===entrySiteId?'selected':''}" onclick="chooseEntrySite('${s.id}')">🏗️ ${esc(s.nom)}</button>`).join('')||'<div class="picker-empty">Aucun chantier disponible.</div>'}</div></div></div><div class="quick-head"><h3>⚡ Ajouter une tâche</h3><span class="muted">Quantité totale</span></div><input class="task-search" type="search" placeholder="🔎 Chercher une tâche…" value="${esc(taskSearch)}" oninput="taskSearch=this.value;renderQuickTasks()"><div id="quickTasks">${quickTasksHtml()}</div></div><div class="card"><h2>Travaux réalisés</h2><div id="lines"></div>${isAdmin?'<div class="total"><small>Total journée</small><br><span id="total">0,00 €</span></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button>${isAdmin||!day||day.lines.every(l=>l.user_id===session.user.id)?'<button class="btn red" onclick="clearDay()">Effacer</button>':''}</div></div></main>`;renderLines();calc()}
-function changeDate(v){currentDate=v;lines=days[v]?days[v].lines.map(x=>({...x})):[];entrySiteId=lines.at(-1)?.siteId||sites[0]?.id||'';renderToday()}
-function toggleEntrySite(){togglePicker('entrySite',0)}
-function chooseEntrySite(id){const s=sites.find(x=>x.id===id);if(!s)return;entrySiteId=id;document.getElementById('entrySitePicker')?.classList.remove('open');renderToday()}
-function quickTasksHtml(){const q=taskSearch.trim().toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');const recent=recentTaskIds(),favorites=favoriteTaskIds();const sorted=[...rates].sort((a,b)=>Number(favorites.includes(b.id))-Number(favorites.includes(a.id))||(recent.indexOf(a.id)<0?999:recent.indexOf(a.id))-(recent.indexOf(b.id)<0?999:recent.indexOf(b.id))||a.nom.localeCompare(b.nom,'fr'));const found=sorted.filter(r=>!q||r.nom.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(q));return found.length?`<div class="quick-grid">${found.slice(0,q?20:8).map(r=>`<div class="quick-task-wrap"><button type="button" class="quick-task" onclick="addRateTask('${r.id}')"><span>${favorites.includes(r.id)?'❤️ ':recent.includes(r.id)?'🕘 ':''}${esc(r.nom)}</span><small>${esc(r.unite)}${isAdmin?' · '+money(r.prix):''}</small></button><button type="button" class="favorite-toggle" aria-label="${favorites.includes(r.id)?'Retirer des favoris':'Ajouter aux favoris'}" onclick="toggleFavoriteTask('${r.id}')">${favorites.includes(r.id)?'♥':'♡'}</button></div>`).join('')}</div>`:'<div class="picker-empty">Aucune tâche trouvée. Ajoute-la dans Tarifs quand tu veux.</div>'}
-function renderQuickTasks(){const box=document.getElementById('quickTasks');if(box)box.innerHTML=quickTasksHtml()}
-function addRateTask(id){if(!entrySiteId){toast('Choisis d’abord un chantier.');document.getElementById('entrySitePicker')?.scrollIntoView({behavior:'smooth',block:'center'});return}const r=rates.find(x=>x.id===id);if(!r)return;lines.push({siteId:entrySiteId,site:sites.find(s=>s.id===entrySiteId)?.nom||'',rateId:r.id,name:r.nom,unit:r.unite,qty:'',price:r.prix,remarque:''});rememberTask(id);renderLines();calc();document.getElementById('lines')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
-function adjustQty(i,delta){const l=lines[i];l.qty=Math.max(0,(Number(l.qty)||0)+delta).toString();renderLines();calc()}
-function addLine(){if(!entrySiteId){toast('Choisis d’abord un chantier.');return}lines.push({siteId:entrySiteId,site:sites.find(s=>s.id===entrySiteId)?.nom||'',rateId:'',name:'',unit:'',qty:'',price:'',remarque:''});renderLines();calc()}
+ document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" ${editingExisting?'disabled':''} onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.${editingExisting?' Tu modifies uniquement tes propres lignes.':''}</div></div><div class="card"><h2>Travaux réalisés</h2><div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche / chantier</button>${isAdmin?'<div class="total"><small>Total journée</small><br><span id="total">0,00 €</span></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button>${isAdmin||!day||day.lines.every(l=>l.user_id===session.user.id)?'<button class="btn red" onclick="clearDay()">Effacer</button>':''}</div></div></main>`;renderLines();calc()}
+function changeDate(v){currentDate=v;lines=days[v]?days[v].lines.map(x=>({...x})):[];renderToday()}
+function addLine(){lines.push({siteId:'',site:'',rateId:'',name:'',unit:'',qty:'',price:'',remarque:''});renderLines();calc()}
 function renderLines(){
   const box=document.getElementById('lines');if(!box)return;
-  if(!lines.length){box.innerHTML='<div class="empty">Aucune tâche pour le moment. Choisis une tâche ci-dessus 👆</div>';return}
+  if(!lines.length){box.innerHTML='<div class="empty">Aucune tâche. Ajoute une ligne.</div>';return}
   box.innerHTML=lines.map((l,i)=>{
-    const siteName=sites.find(s=>s.id===l.siteId)?.nom||l.site||'Sans chantier';
+    const siteName=sites.find(s=>s.id===l.siteId)?.nom||l.site||'';
     const rateName=rates.find(r=>r.id===l.rateId)?.nom||l.name||'';
+    const siteOptions=sites.map(s=>`<button type="button" class="picker-option ${s.id===l.siteId?'selected':''}" data-value="${s.id}" onclick="chooseSite(${i},'${s.id}')">${esc(s.nom)}</button>`).join('');
     const rateOptions=rates.map(r=>`<button type="button" class="picker-option ${r.id===l.rateId?'selected':''}" data-value="${r.id}" onclick="chooseRate(${i},'${r.id}')">${esc(r.nom)}${isAdmin?' — '+money(r.prix)+'/'+esc(r.unite):' — '+esc(r.unite)}</button>`).join('');
-    return `<div class="work"><div class="workhead"><span class="worktitle">${esc(rateName||'Nouvelle tâche')}</span><span class="site-pill">🏗️ ${esc(siteName)}</span></div>
-      <div class="task-row ${isAdmin?'admin':'worker'}"><div><label>Tâche du catalogue</label><div class="picker" id="ratePicker${i}">
+    return `<div class="work"><div class="workhead"><span class="worktitle">Travail ${i+1}</span><button class="btn red" style="padding:6px 10px" onclick="deleteLine(${i})">Supprimer</button></div>
+      <div class="grid4" style="${isAdmin?'':'grid-template-columns:1.35fr 1.55fr .65fr 38px'}">
+        <div><label>Chantier</label><div class="picker" id="sitePicker${i}">
+          <button type="button" class="picker-trigger ${siteName?'':'placeholder'}" onclick="togglePicker('site',${i})">${esc(siteName||'Choisir…')}</button>
+          <div class="picker-menu"><input class="picker-search" type="search" placeholder="Rechercher un chantier…" aria-label="Rechercher un chantier" oninput="filterPicker(this)" onclick="event.stopPropagation()"><div class="picker-options">${siteOptions||'<div class="picker-empty">Aucun chantier disponible.</div>'}</div></div>
+        </div></div>
+        <div><label>Tâche</label><div class="picker" id="ratePicker${i}">
           <button type="button" class="picker-trigger ${rateName?'':'placeholder'}" onclick="togglePicker('rate',${i})">${esc(rateName||'Choisir…')}</button>
           <div class="picker-menu"><input class="picker-search" type="search" placeholder="Rechercher une tâche…" aria-label="Rechercher une tâche" oninput="filterPicker(this)" onclick="event.stopPropagation()"><div class="picker-options">${rateOptions||'<div class="picker-empty">Aucune tâche disponible.</div>'}</div></div>
-        </div></div><div><label>Quantité totale${l.unit?' · '+esc(l.unit):''}</label><div class="qty-control"><button type="button" class="qty-step" onclick="adjustQty(${i},-1)" aria-label="Diminuer">−</button><input type="number" inputmode="decimal" step="1" min="0" value="${esc(l.qty)}" placeholder="0" oninput="lines[${i}].qty=this.value;calc()"><button type="button" class="qty-step" onclick="adjustQty(${i},1)" aria-label="Augmenter">+</button></div></div>
-        ${isAdmin?`<div><label>Prix unitaire (€)</label><input type="number" inputmode="decimal" step="0.01" value="${esc(l.price)}" oninput="lines[${i}].price=this.value;calc()"></div>`:''}<button class="btn red delete-task" aria-label="Supprimer cette tâche" onclick="deleteLine(${i})">×</button></div>
-      <div class="muted quantity-hint">Saisis une décimale si besoin (ex. 12,5).</div>
+        </div></div>
+        <div><label>Quantité</label><input type="number" inputmode="decimal" step="0.01" value="${esc(l.qty)}" oninput="lines[${i}].qty=this.value;calc()"></div>
+        ${isAdmin?`<div><label>Prix</label><input type="number" inputmode="decimal" step="0.01" value="${esc(l.price)}" oninput="lines[${i}].price=this.value;calc()"></div>`:''}
+        <div><button class="btn red" style="padding:10px 8px" onclick="deleteLine(${i})">×</button></div>
+      </div>
+      <div class="muted" style="margin-top:6px">${l.unit?'Unité : '+esc(l.unit):'Sélectionne une tâche.'}</div>
       <div style="margin-top:8px"><label>Remarque (facultatif)</label><input type="text" value="${esc(l.remarque||'')}" placeholder="Ex. finition, difficulté, précision…" oninput="lines[${i}].remarque=this.value"></div>
     </div>`;
   }).join('');
 }
 function togglePicker(kind,i){
-  const id=kind==='entrySite'?'entrySitePicker':(kind==='site'?'sitePicker':'ratePicker')+i;
+  const id=(kind==='site'?'sitePicker':'ratePicker')+i;
   const target=document.getElementById(id);
   const wasOpen=target?.classList.contains('open');
   document.querySelectorAll('.picker.open').forEach(p=>p.classList.remove('open'));
@@ -199,7 +193,7 @@ function chooseRate(i,id){pickRate(i,id)}
 document.addEventListener('click',e=>{
   if(!e.target.closest('.picker'))document.querySelectorAll('.picker.open').forEach(p=>p.classList.remove('open'));
 });
-function pickRate(i,v){lines[i].rateId=v;if(v){const r=rates.find(x=>x.id===v);if(r){lines[i].name=r.nom;lines[i].unit=r.unite;lines[i].price=r.prix;rememberTask(v)}}else{lines[i].name='';lines[i].unit='';lines[i].price=''}renderLines();calc()}
+function pickRate(i,v){lines[i].rateId=v;if(v){const r=rates.find(x=>x.id===v);if(r){lines[i].name=r.nom;lines[i].unit=r.unite;lines[i].price=r.prix}}else{lines[i].name='';lines[i].unit='';lines[i].price=''}renderLines();calc()}
 function deleteLine(i){undoStack.push({type:'line',index:i,data:{...lines[i]},date:currentDate});lines.splice(i,1);renderLines();calc();toast('Tâche supprimée — annulation disponible dans Historique')}
 function calc(){let t=lines.reduce((s,l)=>s+(Number(l.qty)||0)*(Number(l.price)||0),0);let e=document.getElementById('total');if(e)e.textContent=money(t);return t}
 async function saveDay(){
@@ -242,7 +236,7 @@ function renderHistory(){
   if(undoStack.length){
     html+='<div class="card"><h2>↶ Annuler une suppression</h2><button class="btn green" onclick="undoLast()">↶ Annuler la dernière suppression</button><div class="muted" style="margin-top:7px">Dernière suppression : '+(undoStack[undoStack.length-1].type==='day'?'journée':'tâche')+'</div></div>';
   }
-  html+='<details style="margin:4px 0 12px;padding:8px 10px;background:#ffffff80;border-radius:12px"><summary style="cursor:pointer;font-size:13px;color:#777">💾 Sauvegarde locale</summary><div class="muted" style="margin:9px 0 10px">Cette sauvegarde permet aussi de conserver une copie de sécurité de tes données.</div><div class="actions"><button class="btn" title="Exporter les données" aria-label="Exporter les données" onclick="exportData()">⬇️</button><button class="btn light" title="Importer une sauvegarde" aria-label="Importer une sauvegarde" onclick="document.getElementById(\'importFile\').click()">⬆️</button><input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importData(this)"></div></details>';
+  html+='<div class="card"><h2>💾 Sauvegarde locale</h2><div class="muted" style="margin-bottom:10px">Cette sauvegarde permet aussi de conserver une copie de sécurité de tes données.</div><div class="actions"><button class="btn" title="Exporter les données" aria-label="Exporter les données" onclick="exportData()">⬇️</button><button class="btn light" title="Importer une sauvegarde" aria-label="Importer une sauvegarde" onclick="document.getElementById(\'importFile\').click()">⬆️</button><input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importData(this)"></div></div>';
   if(isAdmin){
     html+='<details style="margin:4px 0 12px;padding:8px 10px;background:#ffffff80;border-radius:12px"><summary style="cursor:pointer;font-size:13px;color:#777">⚙️ Migration ancienne application</summary><div class="muted" style="margin-top:9px">Pour importer une ancienne sauvegarde JSON de la version locale dans Supabase.</div><div class="muted" style="margin-top:6px">À faire une seule fois. Ne pas importer plusieurs fois le même fichier.</div><button class="btn light" style="margin-top:9px;padding:8px 10px;font-size:13px" onclick="document.getElementById(\'migrationFile\').click()">📥 Choisir le fichier</button><input id="migrationFile" type="file" accept=".json,application/json" style="display:none" onchange="migrateOldData(this)"></details>';
   }
@@ -271,10 +265,9 @@ function renderHistory(){
         md.forEach(d=>{
           const bySite={};
           days[d].lines.forEach(l=>bySite[l.site||'Sans chantier']=(bySite[l.site||'Sans chantier']||0)+l.qty*l.price);
-          html+='<div class="history-day" style="padding:10px 6px 10px 10px;border-bottom:1px solid #eee"><div class="item">';
-          html+='<div class="history-date"><div class="big">'+dateFR(d)+'</div><div class="muted">'+Object.keys(bySite).length+' chantier(s) · '+days[d].lines.length+' tâche(s)'+'</div></div>';
+          html+='<div style="padding:10px 6px 10px 10px;border-bottom:1px solid #eee"><div class="item">';
+          html+='<div><div class="big">'+dateFR(d)+'</div><div class="muted">'+Object.keys(bySite).length+' chantier(s) · '+days[d].lines.length+' tâche(s)'+'</div></div>';
           html+='<div style="text-align:right">'+(isAdmin?'<div class="money">'+money(days[d].total)+'</div>':'')+'<div class="actions" style="justify-content:flex-end;margin-top:6px"><button class="btn light" style="padding:7px 9px" onclick="viewDay(\''+d+'\')">Voir</button>'+(isAdmin||canEditDay(d)?'<button class="btn light" style="padding:7px 9px" onclick="editDay(\''+d+'\')">Modifier</button>':'')+'</div></div></div>';
-          html+='<div class="history-sites">';
           Object.entries(bySite).forEach(([site,total])=>{
             const siteLines=days[d].lines.filter(l=>(l.site||'Sans chantier')===site);
             const workerIds=[...new Set(siteLines.map(l=>l.user_id).filter(Boolean))];
@@ -282,7 +275,7 @@ function renderHistory(){
             const workerLabel=workerNames.length?'<span class="history-worker">('+workerNames.map(esc).join(', ')+')</span>':'';
             html+='<div class="site-total"><span>🏗️ '+esc(site)+' '+workerLabel+'</span>'+(isAdmin?'<span>'+money(total)+'</span>':'')+'</div>';
           });
-          html+='</div></div>';
+          html+='</div>';
         });
         html+='</details>';
       });
@@ -293,42 +286,81 @@ function renderHistory(){
   document.getElementById('app').innerHTML=html;
 }
 function canEditDay(d){const day=days[d];if(!day)return false;return isAdmin||day.lines.some(l=>l.user_id===session.user.id)}
+function shareDatesInRange(){
+  if(!shareStartDate||!shareEndDate||shareStartDate>shareEndDate)return [];
+  return Object.keys(days).filter(d=>d>=shareStartDate&&d<=shareEndDate).sort();
+}
+function shareLines(){
+  const rows=[];
+  shareDatesInRange().forEach(date=>{
+    (days[date]?.lines||[]).forEach(l=>{
+      const site=l.site||'Sans chantier';
+      if(shareSelected.includes(site))rows.push({...l,_date:date,_site:site});
+    });
+  });
+  return rows;
+}
+function shareGroupedTasks(){
+  const groups={};
+  shareLines().forEach(l=>{
+    const key=[l._site,l.name||'Tâche libre',l.unit||''].join('\u001f');
+    if(!groups[key])groups[key]={site:l._site,name:l.name||'Tâche libre',unit:l.unit||'',qty:0,total:0,dates:[],remarks:[]};
+    const g=groups[key];g.qty+=(Number(l.qty)||0);g.total+=(Number(l.qty)||0)*(Number(l.price)||0);
+    if(!g.dates.includes(l._date))g.dates.push(l._date);
+    if(l.remarque)g.remarks.push(`${dateFR(l._date)} : ${l.remarque}`);
+  });
+  return Object.values(groups);
+}
 function renderShare(){
   const dates=Object.keys(days).sort().reverse();
   if(!shareDate||!days[shareDate])shareDate=dates[0]||'';
-  document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>✉️ Partager une journée</h2><div class="muted" style="margin-bottom:12px">Choisis une journée, sélectionne les chantiers à transmettre et indique l’adresse courriel du destinataire.</div><label>Journée de l’historique</label><select id="shareDate" onchange="changeShareDate(this.value)"><option value="">Choisir une journée…</option>${dates.map(d=>`<option value="${d}" ${d===shareDate?'selected':''}>${dateFR(d)}</option>`).join('')}</select><div id="shareSites" style="margin-top:14px">${shareSitesHtml()}</div><div style="margin-top:14px"><label>Adresse courriel du destinataire</label><input id="shareRecipient" type="email" list="shareEmailSuggestions" autocomplete="email" placeholder="nom@exemple.fr" value="${esc(shareRecipient)}" oninput="shareRecipient=this.value"><datalist id="shareEmailSuggestions">${savedShareEmails().map(email=>`<option value="${esc(email)}"></option>`).join('')}</datalist>${savedShareEmails().length?'<div class="muted" style="margin-top:5px">Adresses mémorisées sur cet appareil; la dernière utilisée est préremplie.</div>':''}</div><div class="actions" style="margin-top:14px"><button class="btn" onclick="sendShareEmail()">Préparer le courriel</button></div><div class="muted" style="margin-top:9px">Ton application de messagerie s’ouvrira avec le contenu prérempli. Vérifie le message puis appuie sur Envoyer.</div></div><div id="sharePreview">${sharePreviewHtml()}</div></main>`;
+  if(!shareStartDate||!days[shareStartDate])shareStartDate=shareDate;
+  if(!shareEndDate||!days[shareEndDate])shareEndDate=shareDate;
+  if(shareStartDate>shareEndDate){shareEndDate=shareStartDate}
+  document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>✉️ Partager un chantier</h2><div class="muted" style="margin-bottom:12px">Choisis une période : les prestations du même chantier seront regroupées et les quantités de chaque tâche cumulées sur tous les jours sélectionnés.</div><div class="grid2"><div><label>Du</label><select id="shareStartDate" onchange="changeShareRange()"><option value="">Choisir une date…</option>${dates.map(d=>`<option value="${d}" ${d===shareStartDate?'selected':''}>${dateFR(d)}</option>`).join('')}</select></div><div><label>Au</label><select id="shareEndDate" onchange="changeShareRange()"><option value="">Choisir une date…</option>${dates.map(d=>`<option value="${d}" ${d===shareEndDate?'selected':''}>${dateFR(d)}</option>`).join('')}</select></div></div><div id="shareSites" style="margin-top:14px">${shareSitesHtml()}</div><div style="margin-top:14px"><label>Adresse courriel du destinataire</label><input id="shareRecipient" type="email" list="shareEmailSuggestions" autocomplete="email" placeholder="nom@exemple.fr" value="${esc(shareRecipient)}" oninput="shareRecipient=this.value"><datalist id="shareEmailSuggestions">${savedShareEmails().map(email=>`<option value="${esc(email)}"></option>`).join('')}</datalist>${savedShareEmails().length?'<div class="muted" style="margin-top:5px">Adresses mémorisées sur cet appareil; la dernière utilisée est préremplie.</div>':''}</div><div class="actions" style="margin-top:14px"><button class="btn" onclick="sendShareEmail()">Préparer le courriel</button></div><div class="muted" style="margin-top:9px">Ton application de messagerie s’ouvrira avec le contenu prérempli. Vérifie le message puis appuie sur Envoyer.</div></div><div id="sharePreview">${sharePreviewHtml()}</div></main>`;
 }
 function sharePreviewHtml(){
-  const day=days[shareDate];
-  if(!day)return '<div class="card"><h2>Aperçu du courriel</h2><div class="empty">Choisis une journée pour afficher l’aperçu.</div></div>';
-  const selected=day.lines.filter(l=>shareSelected.includes(l.site||'Sans chantier'));
-  if(!selected.length)return '<div class="card"><h2>👁️ Aperçu du courriel</h2><div class="empty">Coche au moins un chantier pour afficher le compte rendu.</div></div>';
-  const groups={};selected.forEach(l=>{const name=l.site||'Sans chantier';(groups[name]||(groups[name]=[])).push(l)});
-  let html=`<div class="card"><h2>👁️ Aperçu du courriel</h2><div class="muted">Objet : Compte rendu chantier — ${esc(new Date(shareDate+'T12:00:00').toLocaleDateString('fr-FR'))}</div><div style="margin-top:14px">Bonjour,<br><br>Voici le compte rendu du ${esc(dateFR(shareDate))} :</div>`;
-  Object.entries(groups).forEach(([site,items])=>{html+=`<div class="share-site" style="margin-top:16px"><h3 class="share-site-title">🏗️ ${esc(site)}</h3>`;items.forEach(l=>{const amount=(Number(l.qty)||0)*(Number(l.price)||0);html+=`<div class="work"><div class="worktitle">${esc(l.name||'Tâche libre')}</div><div class="muted" style="margin-top:5px">Quantité : <b>${esc(l.qty)}</b> ${esc(l.unit||'')}${isAdmin?' · Montant : '+money(amount):''}</div>${l.remarque?`<div style="margin-top:7px"><b>Remarque :</b> ${esc(l.remarque)}</div>`:''}</div>`});if(isAdmin){const siteTotal=items.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);html+=`<div class="share-site-total"><span>Total</span><b>${money(siteTotal)}</b></div>`}html+='</div>'});
+  const dates=shareDatesInRange();
+  if(!dates.length)return '<div class="card"><h2>Aperçu du courriel</h2><div class="empty">Choisis une période contenant des journées enregistrées.</div></div>';
+  const selected=shareGroupedTasks();
+  if(!selected.length)return '<div class="card"><h2>👁️ Aperçu du courriel</h2><div class="empty">Coche au moins un chantier pour afficher le compte rendu cumulé.</div></div>';
+  const groups={};selected.forEach(g=>{(groups[g.site]||(groups[g.site]=[])).push(g)});
+  const period=dates.length===1?dateFR(dates[0]):`${dateFR(dates[0])} au ${dateFR(dates[dates.length-1])}`;
+  let html=`<div class="card"><h2>👁️ Aperçu du courriel</h2><div class="muted">Objet : Compte rendu chantier — ${esc(dates[0]===dates[dates.length-1]?dateFR(dates[0]):dates[0].split('-').reverse().join('/')+' au '+dates[dates.length-1].split('-').reverse().join('/'))}</div><div style="margin-top:14px">Bonjour,<br><br>Voici le compte rendu du ${esc(period)}. Les quantités identiques sont cumulées sur la période :</div>`;
+  Object.entries(groups).forEach(([site,items])=>{html+=`<div style="margin-top:16px"><h3>🏗️ ${esc(site)}</h3>`;items.forEach(g=>{html+=`<div class="work"><div class="worktitle">${esc(g.name)}</div><div class="muted" style="margin-top:5px">Quantité cumulée : <b>${esc(g.qty)}</b> ${esc(g.unit)} · ${g.dates.length} jour(s)${isAdmin?' · Montant total : '+money(g.total):''}</div>${g.remarks.length?`<div style="margin-top:7px"><b>Remarques :</b> ${g.remarks.map(esc).join(' · ')}</div>`:''}</div>`});html+='</div>'});
+  if(isAdmin){const total=selected.reduce((sum,g)=>sum+g.total,0);html+=`<div class="total"><small>Total sélectionné</small><br>${money(total)}</div>`}
   html+='<div style="margin-top:15px">Cordialement,<br>Martin</div></div>';return html;
 }
 function shareSitesHtml(){
-  const day=days[shareDate];
-  if(!day)return '<div class="empty">Aucune journée enregistrée à partager.</div>';
-  const names=[...new Set(day.lines.map(l=>l.site||'Sans chantier'))];
-  if(!names.length)return '<div class="empty">Cette journée ne contient aucun chantier.</div>';
-  return '<div><div class="big" style="font-size:15px;margin-bottom:8px">Chantiers à inclure</div>'+names.map((name,i)=>`<label style="display:flex;align-items:center;gap:9px;padding:9px 10px;margin:0;border:1px solid #eee;border-radius:10px;margin-bottom:7px;color:#111;font-size:14px"><input type="checkbox" style="width:20px;height:20px;margin:0" ${shareSelected.includes(name)?'checked':''} onchange="toggleShareSite(${i},this.checked)"><span>🏗️ ${esc(name)}</span></label>`).join('')+'</div>';
+  const dates=shareDatesInRange();
+  if(!dates.length)return '<div class="empty">Aucune journée enregistrée dans cette période.</div>';
+  const names=[...new Set(dates.flatMap(d=>(days[d]?.lines||[]).map(l=>l.site||'Sans chantier')))];
+  if(!names.length)return '<div class="empty">Aucun chantier dans cette période.</div>';
+  return '<div><div class="big" style="font-size:15px;margin-bottom:8px">Chantiers à inclure sur toute la période</div>'+names.map((name,i)=>`<label style="display:flex;align-items:center;gap:9px;padding:9px 10px;margin:0;border:1px solid #eee;border-radius:10px;margin-bottom:7px;color:#111;font-size:14px"><input type="checkbox" style="width:20px;height:20px;margin:0" ${shareSelected.includes(name)?'checked':''} onchange="toggleShareSite(${i},this.checked)"><span>🏗️ ${esc(name)}</span></label>`).join('')+'</div>';
 }
-function changeShareDate(date){shareDate=date;shareSelected=[];renderShare()}
-function toggleShareSite(index,checked){const names=[...new Set((days[shareDate]?.lines||[]).map(l=>l.site||'Sans chantier'))],name=names[index];if(!name)return;if(checked&&!shareSelected.includes(name))shareSelected.push(name);if(!checked)shareSelected=shareSelected.filter(x=>x!==name);const box=document.getElementById('shareSites');if(box)box.innerHTML=shareSitesHtml();const preview=document.getElementById('sharePreview');if(preview)preview.innerHTML=sharePreviewHtml()}
+function changeShareRange(){
+  const start=document.getElementById('shareStartDate')?.value||'',end=document.getElementById('shareEndDate')?.value||'';
+  if(start)shareStartDate=start;if(end)shareEndDate=end;
+  if(shareStartDate&&shareEndDate&&shareStartDate>shareEndDate){shareEndDate=shareStartDate;}
+  shareSelected=[];renderShare();
+}
+function toggleShareSite(index,checked){const names=[...new Set(shareDatesInRange().flatMap(d=>(days[d]?.lines||[]).map(l=>l.site||'Sans chantier')))],name=names[index];if(!name)return;if(checked&&!shareSelected.includes(name))shareSelected.push(name);if(!checked)shareSelected=shareSelected.filter(x=>x!==name);const box=document.getElementById('shareSites');if(box)box.innerHTML=shareSitesHtml();const preview=document.getElementById('sharePreview');if(preview)preview.innerHTML=sharePreviewHtml()}
 function sendShareEmail(){
   const input=document.getElementById('shareRecipient');if(input)shareRecipient=input.value.trim();
-  if(!shareDate||!days[shareDate]){toast('Choisis une journée à partager.');return}
-  if(!shareRecipient||!/^\S+@\S+\.\S+$/.test(shareRecipient)){toast('Renseigne une adresse courriel valide.');return}
+  const dates=shareDatesInRange();
+  if(!dates.length){toast('Choisis une période contenant des journées enregistrées.');return}
+  if(!shareRecipient||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shareRecipient)){toast('Renseigne une adresse courriel valide.');return}
   if(!shareSelected.length){toast('Sélectionne au moins un chantier.');return}
   try{const emails=[shareRecipient,...savedShareEmails().filter(email=>email.toLowerCase()!==shareRecipient.toLowerCase())].slice(0,20);localStorage.setItem(SHARE_EMAILS_KEY,JSON.stringify(emails))}catch{toast('Impossible de mémoriser cette adresse sur cet appareil.')}
-  const day=days[shareDate],selected=day.lines.filter(l=>shareSelected.includes(l.site||'Sans chantier'));
-  const bySite={};selected.forEach(l=>{const name=l.site||'Sans chantier';(bySite[name]||(bySite[name]=[])).push(l)});
-  const body=['Bonjour,','',`Voici le compte rendu du ${dateFR(shareDate)} :`,''];
-  Object.entries(bySite).forEach(([site,items])=>{body.push(`🟩 CHANTIER : ${site}`,'────────────────────────');items.forEach(l=>{let line=`• ${l.name||'Tâche libre'} — ${l.qty} ${l.unit||''}`.trim();if(l.remarque)line+=`\n  Remarque : ${l.remarque}`;if(isAdmin)line+=`\n  Montant : ${money((Number(l.qty)||0)*(Number(l.price)||0))}`;body.push(line)});if(isAdmin){const siteTotal=items.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);body.push(`🟦 TOTAL : ${money(siteTotal)}`)}body.push('')});
+  const selected=shareGroupedTasks();
+  const bySite={};selected.forEach(g=>{(bySite[g.site]||(bySite[g.site]=[])).push(g)});
+  const period=dates.length===1?dateFR(dates[0]):`${dateFR(dates[0])} au ${dateFR(dates[dates.length-1])}`;
+  const body=['Bonjour,','',`Voici le compte rendu du ${period}. Les quantités des mêmes tâches sont cumulées sur la période.`,''];
+  Object.entries(bySite).forEach(([site,items])=>{body.push(`CHANTIER : ${site}`);items.forEach(g=>{let line=`• ${g.name} — Quantité cumulée : ${g.qty} ${g.unit}`.trim();if(g.dates.length>1)line+=` (${g.dates.length} jours)`;if(g.remarks.length)line+=`\n  Remarques : ${g.remarks.join(' | ')}`;if(isAdmin)line+=`\n  Montant total : ${money(g.total)}`;body.push(line)});body.push('')});
+  if(isAdmin){const total=selected.reduce((sum,g)=>sum+g.total,0);body.push(`Total sélectionné : ${money(total)}`,'')}
   body.push('Cordialement,','Martin');
-  const subject=`Compte rendu chantier — ${new Date(shareDate+'T12:00:00').toLocaleDateString('fr-FR')}`;
+  const startLabel=dates[0].split('-').reverse().join('/'),endLabel=dates[dates.length-1].split('-').reverse().join('/');
+  const subject=`Compte rendu chantier — ${startLabel}${dates.length>1?' au '+endLabel:''}`;
   window.location.href=`mailto:${encodeURIComponent(shareRecipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.join('\n'))}`;
 }
 function editDay(d){const day=days[d];if(!day)return;if(!canEditDay(d)){toast('Tu n’as aucune ligne modifiable dans cette journée');return}currentDate=d;lines=isAdmin?day.lines.map(x=>({...x})):day.lines.filter(x=>x.user_id===session.user.id).map(x=>({...x}));show('today')}
