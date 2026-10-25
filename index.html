@@ -319,7 +319,8 @@ function toggleShareSite(index,checked){const names=[...new Set(shareDates.flatM
 function toggleShareGrouping(value){shareGroupTasks=value;const preview=document.getElementById('sharePreview');if(preview)preview.innerHTML=sharePreviewHtml()}
 function groupShareTasks(items){const grouped=new Map();items.forEach(l=>{const key=[l.name||'Tâche libre',l.unit||'',l.remarque||''].join('\u0000');if(!grouped.has(key))grouped.set(key,{...l,qty:0,total:0});const g=grouped.get(key);g.qty+=(Number(l.qty)||0);g.total+=(Number(l.qty)||0)*(Number(l.price)||0)});return [...grouped.values()]}
 function sendShareEmail(){
-  const input=document.getElementById('shareRecipient');if(input)shareRecipient=input.value.trim();
+  const input=document.getElementById('shareRecipient');
+  if(input)shareRecipient=input.value.trim();
   if(!shareDates.length||shareDates.some(d=>!days[d])){toast('Choisis au moins une journée à partager.');return}
   if(!shareRecipient||!/^\S+@\S+\.\S+$/.test(shareRecipient)){toast('Renseigne une adresse courriel valide.');return}
   if(!shareSelected.length){toast('Sélectionne au moins un chantier.');return}
@@ -327,15 +328,25 @@ function sendShareEmail(){
   const selected=selectedShareLines();
   if(!selected.length){toast('Sélectionne au moins un chantier.');return}
   const bySite={};selected.forEach(l=>{const name=l.site||'Sans chantier';(bySite[name]||(bySite[name]=[])).push(l)});
-  const sortedDates=shareDates.slice().sort(),subject=`Compte rendu chantier — ${sortedDates.length===1?new Date(sortedDates[0]+'T12:00:00').toLocaleDateString('fr-FR'):`${new Date(sortedDates[0]+'T12:00:00').toLocaleDateString('fr-FR')} au ${new Date(sortedDates[sortedDates.length-1]+'T12:00:00').toLocaleDateString('fr-FR')}`}`;
-  const colors=['#174ea6','#137333','#b06000','#a142f4','#c5221f','#007c91','#8a4b08','#5f6368'];
-  const encoded=s=>btoa(unescape(encodeURIComponent(s)));
-  let html=`<!doctype html><html><body style="font-family:Arial,sans-serif;color:#202124;font-size:14px"><p>Bonjour,</p><p>Voici le compte rendu des journées suivantes :<br>${sortedDates.map(d=>'• '+esc(dateFR(d))).join('<br>')}</p>`;
-  Object.entries(bySite).forEach(([site,items],index)=>{const color=colors[index%colors.length];html+=`<section style="margin:18px 0"><h2 style="color:${color};border-bottom:2px solid ${color};padding-bottom:5px">🏗️ ${esc(site)}</h2>`;(shareGroupTasks?groupShareTasks(items):items).forEach(l=>{const amount=l.total??((Number(l.qty)||0)*(Number(l.price)||0));html+=`<div style="padding:8px 10px;margin:7px 0;background:#f7f8fa;border-left:4px solid ${color}"><b>${esc(l.name||'Tâche libre')}</b><div style="color:#5f6368;margin-top:4px">Quantité : ${esc(l.qty)} ${esc(l.unit||'')}${shareGroupTasks?'':' · '+esc(dateFR(l.date))}${isAdmin?' · Montant : <b style="color:'+color+'">'+esc(money(amount))+'</b>':''}</div>${l.remarque?`<div style="margin-top:5px"><b>Remarque :</b> ${esc(l.remarque)}</div>`:''}</div>`});if(isAdmin){const siteTotal=items.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);html+=`<p style="text-align:right;color:${color};font-weight:bold">Total ${esc(site)} : ${esc(money(siteTotal))}</p>`}html+='</section>'});
-  if(isAdmin){const total=selected.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);html+=`<div style="margin-top:18px;padding:12px;border-top:3px solid #202124;text-align:right;font-size:18px;font-weight:bold">Total sélectionné : ${esc(money(total))}</div>`}
-  html+='<p style="margin-top:20px">Cordialement,<br>Martin</p></body></html>';
-  const eml=`To: ${shareRecipient}\r\nSubject: =?UTF-8?B?${encoded(subject)}?=\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${encoded(html).match(/.{1,76}/g).join('\r\n')}\r\n`;
-  const url=URL.createObjectURL(new Blob([eml],{type:'message/rfc822'})),a=document.createElement('a');a.href=url;a.download='compte-rendu-chantier.eml';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Courriel HTML téléchargé : ouvre le fichier pour vérifier puis envoyer.');
+  const sortedDates=shareDates.slice().sort();
+  const dateLabel=sortedDates.length===1?new Date(sortedDates[0]+'T12:00:00').toLocaleDateString('fr-FR'):`${new Date(sortedDates[0]+'T12:00:00').toLocaleDateString('fr-FR')} au ${new Date(sortedDates[sortedDates.length-1]+'T12:00:00').toLocaleDateString('fr-FR')}`;
+  const subject=`Compte rendu chantier — ${dateLabel}`;
+  let body=`Bonjour,\n\nVoici le compte rendu des journées suivantes :\n${sortedDates.map(d=>'• '+dateFR(d)).join('\n')}`;
+  Object.entries(bySite).forEach(([site,items])=>{
+    body+=`\n\n🏗️ ${site}`;
+    (shareGroupTasks?groupShareTasks(items):items).forEach(l=>{
+      body+=`\n• ${l.name||'Tâche libre'} — Quantité : ${l.qty} ${l.unit||''}`;
+      if(!shareGroupTasks)body+=` — ${dateFR(l.date)}`;
+      if(isAdmin){const amount=l.total??((Number(l.qty)||0)*(Number(l.price)||0));body+=` — Montant : ${money(amount)}`}
+      if(l.remarque)body+=`\n  Remarque : ${l.remarque}`;
+    });
+    if(isAdmin){const siteTotal=items.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);body+=`\nTotal ${site} : ${money(siteTotal)}`}
+  });
+  if(isAdmin){const total=selected.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);body+=`\n\nTotal sélectionné : ${money(total)}`}
+  body+='\n\nCordialement,\nMartin';
+  const mailto=`mailto:${encodeURIComponent(shareRecipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href=mailto;
+  toast('Ton application de messagerie va s’ouvrir avec le courriel prérempli.');
 }
 function editDay(d){const day=days[d];if(!day)return;if(!canEditDay(d)){toast('Tu n’as aucune ligne modifiable dans cette journée');return}currentDate=d;lines=isAdmin?day.lines.map(x=>({...x})):day.lines.filter(x=>x.user_id===session.user.id).map(x=>({...x}));show('today')}
 function viewDay(d){
@@ -448,3 +459,4 @@ init();
 </script>
 </body>
 </html>
+
