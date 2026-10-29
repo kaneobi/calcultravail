@@ -256,9 +256,8 @@ function renderHistory(){
     Object.keys(years).sort().reverse().forEach(y=>{
       const months=years[y];
       const yearDates=Object.values(months).flat();
-      const yearTotal=yearDates.reduce((a,d)=>a+(Number(days[d].total)||0),0);
       const yearId='hist-y-'+y;
-      html+='<details class="history-year" open style="margin-bottom:12px"><summary style="cursor:pointer;padding:10px 4px;font-size:18px;font-weight:700;display:flex;justify-content:space-between;gap:10px"><span>📅 '+y+' <span class="muted" style="font-size:14px;font-weight:500">— '+yearDates.length+' journée(s)</span></span>'+(isAdmin?'<span class="money">'+money(yearTotal)+'</span>':'')+'</summary>';
+      html+='<details class="history-year" open style="margin-bottom:12px"><summary style="cursor:pointer;padding:10px 4px;font-size:18px;font-weight:700;display:flex;justify-content:space-between;gap:10px"><span>📅 '+y+' <span class="muted" style="font-size:14px;font-weight:500">— '+yearDates.length+' journée(s)</span></span></summary>';
       Object.keys(months).sort().reverse().forEach(m=>{
         const md=months[m];
         const monthTotal=md.reduce((a,d)=>a+(Number(days[d].total)||0),0);
