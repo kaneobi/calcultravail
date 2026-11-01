@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f2f7">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Suivi Chantier v18</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif}.app{max-width:900px;margin:auto;padding:calc(env(safe-area-inset-top) + 12px) 14px 40px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}h1{font-size:29px;margin:0}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.muted{color:#777;font-size:13px}nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;background:#dddde2;padding:4px;border-radius:14px;margin-bottom:14px}nav button{border:0;background:transparent;padding:9px 3px;border-radius:11px;font-size:12px}nav button.active{background:#fff;font-weight:700}.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:0 1px 4px #0001}label{display:block;font-size:12px;color:#666;margin-bottom:5px}input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;background:#fff;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:650;background:#111;color:#fff}.btn.light{background:#e9e9ee;color:#111}.btn.red{background:#ffe6e6;color:#b00020}.btn.green{background:#e7f7ed;color:#17663a}.btn.blue{background:#e8f0ff;color:#174ea6}.actions{display:flex;gap:8px;flex-wrap:wrap}.work{border:1px solid #e5e5e8;border-radius:14px;padding:11px;margin-bottom:10px;background:#fafafd}.workhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.worktitle{font-weight:750}.grid4{display:grid;grid-template-columns:1.35fr 1.55fr .65fr .85fr 38px;gap:7px;align-items:end}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.total{text-align:right;font-size:27px;font-weight:800;margin-top:12px}.total small{font-size:13px;color:#777;font-weight:500}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}.big{font-size:18px;font-weight:750}.money{font-weight:750;white-space:nowrap}.empty{text-align:center;padding:20px;color:#777}.badge{display:inline-block;padding:4px 8px;border-radius:9px;background:#eee;font-size:11px}.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#f7f7fa;border-radius:14px;padding:13px}.stat .value{font-size:21px;font-weight:800;margin-top:4px}.site-total{display:flex;justify-content:space-between;padding:8px 0;font-weight:650}.credit{background:#fff4e5;border-radius:12px;padding:10px;margin-top:7px}.modalbg{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.modal{background:#fff;border-radius:20px;padding:20px;width:min(430px,100%);box-shadow:0 12px 40px #0004}.toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 15px;border-radius:12px;z-index:30}.login{min-height:80vh;display:flex;align-items:center;justify-content:center}.login .card{width:min(430px,100%)}.topuser{display:flex;align-items:center;gap:8px}.spinner{text-align:center;padding:40px}.danger-note{background:#fff0f0;border-radius:12px;padding:11px;color:#8a0000;font-size:13px}@media(max-width:700px){.grid4{grid-template-columns:1fr 1fr}.grid4>div:nth-child(5){grid-column:2}.grid2{grid-template-columns:1fr}.app{padding-left:10px;padding-right:10px}nav button{font-size:11px}}
@@ -27,11 +28,11 @@
 @media(max-width:700px){.picker-menu{min-width:0;width:max(100%,220px);max-width:calc(100vw - 40px)}.picker-options{max-height:200px}}
 
 </style>
-<style>.history-worker{font-size:11px;font-weight:400;opacity:.65;margin-left:5px;white-space:nowrap}</style></head>
+<style>.history-worker{font-size:11px;font-weight:400;opacity:.65;margin-left:5px;white-space:nowrap}.offline-banner{max-width:900px;margin:0 auto 10px;padding:10px 14px;border-radius:12px;background:#fff0d8;color:#744500;font-size:13px;font-weight:650}.pending-banner{background:#e8f0ff;color:#174ea6}</style></head>
 <body>
 <div class="app">
 <header><div><h1>Suivi Chantier</h1><div id="count" class="muted"></div></div><div id="userArea"></div></header>
-<div id="app"></div>
+<div id="offlineStatus" aria-live="polite"></div><div id="app"></div>
 </div>
 <div id="modal"></div><div id="toast" class="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -41,13 +42,25 @@ const SUPABASE_KEY='sb_publishable_l3pmSSFD60PGIH-Z_vBeeQ_sINP3lzo';
 const {createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
 const LOCAL_KEY='suivi_chantier_v4';
+const OFFLINE_DB='suivi_chantier_offline_v1';
+const OFFLINE_STORE='users';
 let session=null, profile=null, isAdmin=false;
 let sites=[], rates=[], credits=[], profiles=[];
-let days={}, currentDate=new Date().toISOString().slice(0,10), currentPage='today', lines=[];
+let days={}, serverDays={}, currentDate=new Date().toISOString().slice(0,10), currentPage='today', lines=[];
+let pendingDays={};
 const SHARE_EMAILS_KEY='suivi_chantier_share_emails_v1';
 function savedShareEmails(){try{const value=JSON.parse(localStorage.getItem(SHARE_EMAILS_KEY)||'[]');return Array.isArray(value)?value.filter(x=>typeof x==='string'):[]}catch{return []}}
 let shareDate='',shareDates=[],shareRangeStart='',shareRangeEnd='',shareRecipient=savedShareEmails()[0]||'',shareSelected=[],shareGroupTasks=false,shareOpenWeeks=new Set();
 let undoStack=[];
+let lastNetworkFailure=false;
+function markNetworkFailure(error){if(/failed to fetch|network|load failed|abort|timeout|fetcherror/i.test(String(error?.message||error||'')))lastNetworkFailure=true}
+
+function offlineDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open(OFFLINE_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(OFFLINE_STORE))req.result.createObjectStore(OFFLINE_STORE,{keyPath:'userId'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+async function offlineRead(userId){try{const db=await offlineDb();return await new Promise((resolve,reject)=>{const req=db.transaction(OFFLINE_STORE).objectStore(OFFLINE_STORE).get(userId);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)})}catch(e){console.warn('Lecture hors ligne impossible',e);return null}}
+async function offlineWrite(record){try{const db=await offlineDb();return await new Promise((resolve,reject)=>{const tx=db.transaction(OFFLINE_STORE,'readwrite');tx.objectStore(OFFLINE_STORE).put(record);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error)})}catch(e){console.warn('Sauvegarde hors ligne impossible',e);return false}}
+function refreshOfflineStatus(){const el=document.getElementById('offlineStatus');if(!el)return;const count=Object.keys(pendingDays).length;if(!navigator.onLine)el.innerHTML=`<div class="offline-banner">Hors ligne · les journées resteront sur cet appareil${count?` · ${count} en attente`:''}</div>`;else if(count)el.innerHTML=`<div class="offline-banner pending-banner">${count} journée${count>1?'s':''} en attente de synchronisation</div>`;else el.innerHTML=''}
+async function persistOffline(){if(!session?.user?.id)return false;const saved=await offlineWrite({userId:session.user.id,profile,isAdmin,sites,rates,credits,profiles,days:serverDays,pendingDays,savedAt:Date.now()});refreshOfflineStatus();return saved}
+async function restoreOffline(userId){const saved=await offlineRead(userId);if(!saved)return false;profile=saved.profile||null;isAdmin=!!saved.isAdmin;sites=saved.sites||[];rates=saved.rates||[];credits=saved.credits||[];profiles=saved.profiles||[];serverDays=saved.days||{};days=JSON.parse(JSON.stringify(serverDays));pendingDays=saved.pendingDays||{};if(profile)document.getElementById('userArea').innerHTML=`<div class="topuser"><span class="badge">${isAdmin?'Admin':'Utilisateur'} · hors ligne</span><button class="btn light" style="padding:7px 9px" onclick="logout()">Déconnexion</button></div>`;Object.entries(pendingDays).forEach(([date,item])=>{if(item.deleted){delete days[date];return}const old=days[date]||{date,user_id:session.user.id,lines:[],total:0};old.lines=(item.lines||[]).map((l,i)=>({...l,id:l.id||'local-'+date+'-'+i,pending:true}));old.total=old.lines.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);old.pending=true;days[date]=old});setCount();refreshOfflineStatus();return !!profile}
 
 function money(n){return (Number(n)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
 function siteColor(name){const palette=['#e85d75','#f08a4b','#d6a328','#4a9b6e','#2487c9','#7656c8','#bc5ea8'];let hash=0;for(const c of String(name||''))hash=(hash*31+c.charCodeAt(0))>>>0;return palette[hash%palette.length]}
@@ -69,13 +82,18 @@ async function bootstrap(sess){
   try{
     session=sess;
     if(!sess){profile=null;isAdmin=false;sites=[];rates=[];credits=[];days={};document.getElementById('userArea').innerHTML='';renderLogin();return;}
-    await loadUser();
-    if(!profile) return;
-    await loadData();
+    const cached=await offlineRead(sess.user.id);if(cached)pendingDays=cached.pendingDays||{};
+    if(!navigator.onLine){await restoreOffline(sess.user.id);if(!profile){renderLogin();toast('Connecte-toi une première fois avec Internet pour préparer le mode hors ligne.');return}render();return}
+    const userLoaded=await loadUser();
+    if(!userLoaded){await restoreOffline(sess.user.id);if(!profile){renderLogin();return}render();return}
+    const dataLoaded=await loadData();
+    if(!dataLoaded){await restoreOffline(sess.user.id);if(!profile){renderLogin();return}render();return}
+    await persistOffline();
     render();
   }finally{booting=false;}
 }
 async function init(){
+ if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js').catch(e=>console.warn('Cache hors ligne indisponible',e));
  document.getElementById('app').innerHTML='<div class="spinner">Connexion à la base de données…</div>';
  sb.auth.onAuthStateChange((event,sess)=>{
    if(event==='SIGNED_IN'||event==='SIGNED_OUT'||event==='USER_UPDATED'||event==='INITIAL_SESSION') setTimeout(()=>bootstrap(sess),0);
@@ -83,34 +101,39 @@ async function init(){
  const {data:{session:s},error}=await sb.auth.getSession();
  if(error){console.error(error);renderLogin();return;}
  await bootstrap(s);
+ window.addEventListener('online',()=>{refreshOfflineStatus();syncPendingDays()});
+ window.addEventListener('offline',()=>{refreshOfflineStatus();render()});
+ if(navigator.onLine)syncPendingDays();
 }
 async function loadUser(){
  const {data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
- if(error){console.error(error);toast('Impossible de charger le profil');return}
+ if(error){console.error(error);markNetworkFailure(error);return false}
  profile=data;isAdmin=data.role==='admin';
  document.getElementById('userArea').innerHTML=`<div class="topuser"><span class="badge">${isAdmin?'Admin':'Utilisateur'}</span><button class="btn light" style="padding:7px 9px" onclick="logout()">Déconnexion</button></div>`;
+ return true;
 }
 async function loadData(){
+ let ok=true;
  const s=await sb.from('chantiers').select('*').eq('actif',true).order('nom');
- if(s.error){console.error(s.error);toast('Erreur chargement chantiers')}else sites=s.data||[];
+ if(s.error){console.error(s.error);markNetworkFailure(s.error);ok=false}else sites=s.data||[];
  const r=await sb.from('taches').select('*').eq('actif',true).order('nom');
- if(r.error){console.error(r.error);toast('Erreur chargement tarifs')}else rates=r.data||[];
+ if(r.error){console.error(r.error);markNetworkFailure(r.error);ok=false}else rates=r.data||[];
  const p=await sb.from('profiles').select('id,nom,role');
- if(p.error){console.error(p.error);profiles=[]}else profiles=p.data||[];
+ if(p.error){console.error(p.error);markNetworkFailure(p.error);ok=false}else profiles=p.data||[];
  const j=await sb.from('jours').select('*').order('date_travail',{ascending:false});
- if(j.error){console.error(j.error);toast('Erreur chargement journées');return}
+ if(j.error){console.error(j.error);markNetworkFailure(j.error);return false}
  const raw=j.data||[]; const ids=raw.map(x=>x.id);
  let tr=[];
  if(ids.length){
    if(isAdmin){
      const q=await sb.from('travaux').select('*').in('jour_id',ids).order('created_at');
-     if(q.error){console.error(q.error);toast('Erreur chargement travaux')}else tr=q.data||[];
+     if(q.error){console.error(q.error);markNetworkFailure(q.error);ok=false}else tr=q.data||[];
    }else{
      const [pub,own]=await Promise.all([
        sb.from('travaux_historique').select('*').in('jour_id',ids).order('created_at'),
        sb.from('travaux').select('*').in('jour_id',ids).eq('user_id',session.user.id).order('created_at')
      ]);
-     if(pub.error){console.error(pub.error);toast('Erreur chargement historique')}else tr=pub.data||[];
+     if(pub.error){console.error(pub.error);markNetworkFailure(pub.error);ok=false}else tr=pub.data||[];
      if(!own.error){
        const byId=new Map((tr||[]).map(x=>[x.id,x]));
        (own.data||[]).forEach(x=>byId.set(x.id,x));
@@ -123,7 +146,12 @@ async function loadData(){
  tr.forEach(x=>{const d=Object.values(days).find(y=>y.id===x.jour_id);if(!d)return;const note=splitSavRemark(x.remarque);const l={id:x.id,siteId:x.chantier_id,site:(sites.find(s=>s.id===x.chantier_id)||{}).nom||'',rateId:x.tache_id,rate:'',name:x.tache_nom,unit:x.unite,qty:Number(x.quantite)||0,price:Number(x.prix_unitaire)||0,user_id:x.user_id,remarque:note.remarque,sav:note.sav};d.lines.push(l);d.total+=l.qty*l.price});
  if(isAdmin){const c=await sb.from('avoirs').select('*').order('created_at',{ascending:false});credits=c.data||[]}
  else credits=[];
+ if(!ok)return false;
+ serverDays=JSON.parse(JSON.stringify(days));
+ Object.entries(pendingDays).forEach(([date,item])=>{if(item.deleted){delete days[date];return}const old=days[date]||{date,user_id:session.user.id,lines:[],total:0};old.lines=(item.lines||[]).map((l,i)=>({...l,id:l.id||'local-'+date+'-'+i,pending:true}));old.total=old.lines.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0);old.pending=true;days[date]=old});
  setCount();
+ refreshOfflineStatus();
+ return true;
 }
 function renderLogin(){document.getElementById('userArea').innerHTML='';document.getElementById('app').innerHTML=`<div class="login"><div class="card"><h2>🔐 Connexion</h2><div class="muted" style="margin-bottom:14px">Connecte-toi à ton espace Suivi Chantier.</div><label>Identifiant</label><input id="loginEmail" autocomplete="username" placeholder="ton prénom"><div style="height:10px"></div><label>Mot de passe</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Mot de passe"><button class="btn" style="margin-top:14px;width:100%" onclick="login()">Se connecter</button><div id="loginMsg" class="muted" style="margin-top:10px"></div></div></div>`}
 async function login(){let ident=document.getElementById('loginEmail').value.trim().toLowerCase(),pass=document.getElementById('loginPass').value;const m=document.getElementById('loginMsg');m.textContent='Connexion…';const email=ident.includes('@')?ident:(ident+'@calcultravail.local');const {error}=await sb.auth.signInWithPassword({email,password:pass});if(error)m.textContent='Connexion impossible : '+error.message}
@@ -208,31 +236,40 @@ function calc(){let t=lines.reduce((s,l)=>s+(Number(l.qty)||0)*(Number(l.price)|
 async function saveDay(){
  const clean=lines.filter(l=>l.siteId||l.name||Number(l.qty)||Number(l.price));
  if(clean.some(l=>!l.siteId||!l.name)){toast('Chaque ligne doit avoir un chantier et une tâche');return}
- let day=days[currentDate];
+ if(!navigator.onLine){await queueDay(currentDate,clean,false);return}
+ lastNetworkFailure=false;let ok=false;try{ok=await saveDayOnline(currentDate,clean)}catch(e){console.warn('Enregistrement interrompu',e);markNetworkFailure(e)}
+ if(!ok&&(!navigator.onLine||lastNetworkFailure)){await queueDay(currentDate,clean,false);return}
+ if(!ok)return;
+ lines=days[currentDate]?(isAdmin?days[currentDate].lines:days[currentDate].lines.filter(x=>x.user_id===session.user.id)).map(x=>({...x})) : [];
+ toast('Journée enregistrée');renderToday()
+}
+async function saveDayOnline(date,clean){
+ let day=serverDays[date]||days[date];
  let dayId=day?.id;
  if(!dayId){
-   const q=await sb.from('jours').insert({date_travail:currentDate,user_id:session.user.id}).select().single();
-   if(q.error){toast('Erreur création journée : '+q.error.message);return}
+   const q=await sb.from('jours').insert({date_travail:date,user_id:session.user.id}).select().single();
+   if(q.error){markNetworkFailure(q.error);if(navigator.onLine&&!lastNetworkFailure)toast('Erreur création journée : '+q.error.message);return false}
    dayId=q.data.id;
  }
  if(isAdmin){
    const oldIds=day?.lines.filter(x=>x.id).map(x=>x.id)||[];
-   if(oldIds.length){const qd=await sb.from('travaux').delete().in('id',oldIds);if(qd.error){toast('Erreur suppression des anciennes lignes : '+qd.error.message);return}}
+   if(oldIds.length){const qd=await sb.from('travaux').delete().in('id',oldIds);if(qd.error){markNetworkFailure(qd.error);if(navigator.onLine&&!lastNetworkFailure)toast('Erreur suppression des anciennes lignes : '+qd.error.message);return false}}
  }else{
    const ownOldIds=day?.lines.filter(x=>x.id&&x.user_id===session.user.id).map(x=>x.id)||[];
-   if(ownOldIds.length){const qd=await sb.from('travaux').delete().in('id',ownOldIds);if(qd.error){toast('Erreur modification de tes lignes : '+qd.error.message);return}}
+   if(ownOldIds.length){const qd=await sb.from('travaux').delete().in('id',ownOldIds);if(qd.error){markNetworkFailure(qd.error);if(navigator.onLine&&!lastNetworkFailure)toast('Erreur modification de tes lignes : '+qd.error.message);return false}}
  }
  const payload=clean.map(l=>({jour_id:dayId,chantier_id:l.siteId,tache_id:l.rateId||null,tache_nom:l.name,unite:l.unit||'',quantite:Number(l.qty)||0,prix_unitaire:Number(l.price)||0,remarque:((l.sav?'[SAV] ':'')+(l.remarque||'').trim())||null,user_id:isAdmin?(l.user_id||session.user.id):session.user.id}));
- if(payload.length){const q=await sb.from('travaux').insert(payload);if(q.error){toast('Erreur enregistrement : '+q.error.message);return}}
+ if(payload.length){const q=await sb.from('travaux').insert(payload);if(q.error){markNetworkFailure(q.error);if(navigator.onLine&&!lastNetworkFailure)toast('Erreur enregistrement : '+q.error.message);return false}}
  if(isAdmin){
    const uq=await sb.from('jours').update({updated_at:new Date().toISOString()}).eq('id',dayId);
-   if(uq.error){toast('Journée enregistrée, mais la date n’a pas été mise à jour : '+uq.error.message)}
+   if(uq.error&&navigator.onLine)toast('Journée enregistrée, mais la date n’a pas été mise à jour : '+uq.error.message)
  }
- await loadData();
- lines=days[currentDate]?(isAdmin?days[currentDate].lines:days[currentDate].lines.filter(x=>x.user_id===session.user.id)).map(x=>({...x})) : [];
- toast('Journée enregistrée');renderToday()
+ const loaded=await loadData();if(!loaded){if(navigator.onLine)toast('Enregistrement terminé, mais actualisation impossible');return false}
+ await persistOffline();return true
 }
-async function clearDay(){const d=days[currentDate];if(!d){toast('Aucune journée enregistrée');return}if(!confirm('Effacer toute cette journée ?'))return;const q=await sb.from('jours').delete().eq('id',d.id);if(q.error){toast('Impossible de supprimer : '+q.error.message);return}undoStack.push({type:'day',date:currentDate,data:d});await loadData();lines=[];renderToday();toast('Journée supprimée — annulation possible tant que la page reste ouverte')}
+async function queueDay(date,dayLines,deleted){pendingDays[date]={lines:deleted?[]:dayLines.map(l=>({...l})),deleted,updatedAt:Date.now()};if(deleted)delete days[date];else{const saved=pendingDays[date].lines;days[date]={...(days[date]||{date,user_id:session.user.id}),date,pending:true,lines:saved.map((l,i)=>({...l,id:l.id||'local-'+date+'-'+i,pending:true})),total:saved.reduce((sum,l)=>sum+(Number(l.qty)||0)*(Number(l.price)||0),0)}}const stored=await persistOffline();refreshOfflineStatus();render();toast(stored?(deleted?'Suppression en attente de synchronisation':'Journée enregistrée sur cet appareil'):'Impossible de sauvegarder hors ligne sur cet appareil')}
+async function syncPendingDays(){if(!session?.user?.id||!navigator.onLine||!Object.keys(pendingDays).length)return;const fresh=await loadData();if(!fresh||!navigator.onLine)return;for(const [date,item] of Object.entries({...pendingDays})){if(!navigator.onLine)break;lastNetworkFailure=false;let ok=false;try{if(item.deleted){const day=serverDays[date]||days[date];if(!day?.id)ok=true;else{const q=await sb.from('jours').delete().eq('id',day.id);if(q.error)markNetworkFailure(q.error);ok=!q.error}}else ok=await saveDayOnline(date,item.lines||[])}catch(e){console.warn('Synchronisation interrompue',e);markNetworkFailure(e)}if(ok){delete pendingDays[date];await persistOffline()}else if(lastNetworkFailure)break}if(navigator.onLine){await loadData();await persistOffline();if(currentPage==='today')lines=days[currentDate]?(isAdmin?days[currentDate].lines:days[currentDate].lines.filter(x=>x.user_id===session.user.id)).map(x=>({...x})):[];render();if(!Object.keys(pendingDays).length)toast('Toutes les journées sont synchronisées')}}
+async function clearDay(){const d=days[currentDate];if(!d){toast('Aucune journée enregistrée');return}if(!confirm('Effacer toute cette journée ?'))return;if(!navigator.onLine){undoStack.push({type:'day',date:currentDate,data:d});await queueDay(currentDate,[],true);lines=[];return}lastNetworkFailure=false;let q;try{q=await sb.from('jours').delete().eq('id',d.id)}catch(e){markNetworkFailure(e)}if(q?.error)markNetworkFailure(q.error);if(!q||q.error){if(!navigator.onLine||lastNetworkFailure){await queueDay(currentDate,[],true);lines=[];return}toast('Impossible de supprimer : '+q.error.message);return}undoStack.push({type:'day',date:currentDate,data:d});await loadData();await persistOffline();lines=[];renderToday();toast('Journée supprimée — annulation possible tant que la page reste ouverte')}
 
 function monthlyTotals(){const out={};Object.entries(days).forEach(([d,x])=>{const m=d.slice(0,7);out[m]=(out[m]||0)+x.total});return out}
 function userName(userId){
