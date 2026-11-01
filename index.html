@@ -23,6 +23,7 @@
 .picker-option:hover,.picker-option:focus{background:#f0f0f5;outline:none}
 .picker-option.selected{background:#e8f0ff;font-weight:700}
 .picker-empty{padding:10px;color:#777;font-size:13px}
+.site-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}.sav-badge{display:inline-block;padding:3px 7px;border-radius:8px;background:#fff0d8;color:#8a4b00;font-size:11px;font-weight:750;margin-left:6px;vertical-align:middle}.recent-rates{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}.recent-rates button{padding:8px 10px;font-size:13px}
 @media(max-width:700px){.picker-menu{min-width:0;width:max(100%,220px);max-width:calc(100vw - 40px)}.picker-options{max-height:200px}}
 
 </style>
@@ -49,6 +50,10 @@ let shareDate='',shareDates=[],shareRangeStart='',shareRangeEnd='',shareRecipien
 let undoStack=[];
 
 function money(n){return (Number(n)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
+function siteColor(name){const palette=['#e85d75','#f08a4b','#d6a328','#4a9b6e','#2487c9','#7656c8','#bc5ea8'];let hash=0;for(const c of String(name||''))hash=(hash*31+c.charCodeAt(0))>>>0;return palette[hash%palette.length]}
+function siteDot(name){return `<span class="site-dot" style="background:${siteColor(name)}"></span>`}
+function savBadge(sav){return sav?'<span class="sav-badge">SAV</span>':''}
+function splitSavRemark(value){const text=String(value||'');const sav=/^\[SAV\]\s*/i.test(text);return {sav,remarque:text.replace(/^\[SAV\]\s*/i,'')}}
 function dateFR(d){return new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
 function monthFR(m){let [y,mo]=m.split('-');return new Date(Number(y),Number(mo)-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
@@ -115,7 +120,7 @@ async function loadData(){
  }
  days={};
  raw.forEach(d=>{days[d.date_travail]={id:d.id,date:d.date_travail,user_id:d.user_id,lines:[],total:0,created_at:d.created_at}});
- tr.forEach(x=>{const d=Object.values(days).find(y=>y.id===x.jour_id);if(!d)return;const l={id:x.id,siteId:x.chantier_id,site:(sites.find(s=>s.id===x.chantier_id)||{}).nom||'',rateId:x.tache_id,rate:'',name:x.tache_nom,unit:x.unite,qty:Number(x.quantite)||0,price:Number(x.prix_unitaire)||0,user_id:x.user_id,remarque:x.remarque||''};d.lines.push(l);d.total+=l.qty*l.price});
+ tr.forEach(x=>{const d=Object.values(days).find(y=>y.id===x.jour_id);if(!d)return;const note=splitSavRemark(x.remarque);const l={id:x.id,siteId:x.chantier_id,site:(sites.find(s=>s.id===x.chantier_id)||{}).nom||'',rateId:x.tache_id,rate:'',name:x.tache_nom,unit:x.unite,qty:Number(x.quantite)||0,price:Number(x.prix_unitaire)||0,user_id:x.user_id,remarque:note.remarque,sav:note.sav};d.lines.push(l);d.total+=l.qty*l.price});
  if(isAdmin){const c=await sb.from('avoirs').select('*').order('created_at',{ascending:false});credits=c.data||[]}
  else credits=[];
  setCount();
@@ -129,9 +134,12 @@ function nav(){return `<nav><button data-page="today" onclick="show('today')">Au
 function renderToday(){
  const day=days[currentDate]; if(day&&!lines.length&&(isAdmin||day.lines.every(l=>l.user_id===session.user.id)))lines=day.lines.map(x=>({...x}));
  const editingExisting=!isAdmin && !!day && lines.length>0;
- document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" ${editingExisting?'disabled':''} onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.${editingExisting?' Tu modifies uniquement tes propres lignes.':''}</div></div><div class="card"><h2>Travaux réalisés</h2><div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche</button><div class="muted" style="margin-top:7px">La nouvelle tâche reprend le dernier chantier choisi. Tu peux le modifier sur chaque ligne.</div>${isAdmin?'<div id="todayTotals" style="margin-top:14px"></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button>${isAdmin||!day||day.lines.every(l=>l.user_id===session.user.id)?'<button class="btn red" onclick="clearDay()">Effacer</button>':''}</div></div></main>`;renderLines();calc()}
+ document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" ${editingExisting?'disabled':''} onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.${editingExisting?' Tu modifies uniquement tes propres lignes.':''}</div></div><div class="card"><h2>Travaux réalisés</h2>${recentRatesHtml()}<div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche</button><div class="muted" style="margin-top:7px">La nouvelle tâche reprend le dernier chantier choisi. Tu peux le modifier sur chaque ligne.</div>${isAdmin?'<div id="todayTotals" style="margin-top:14px"></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button>${isAdmin||!day||day.lines.every(l=>l.user_id===session.user.id)?'<button class="btn red" onclick="clearDay()">Effacer</button>':''}</div></div></main>`;renderLines();calc()}
 function changeDate(v){currentDate=v;lines=days[v]?days[v].lines.map(x=>({...x})):[];renderToday()}
-function addLine(){const previous=[...lines].reverse().find(l=>l.siteId||l.site);lines.push({siteId:previous?.siteId||'',site:previous?.site||'',rateId:'',name:'',unit:'',qty:'',price:'',remarque:''});renderLines();calc()}
+function addLine(){const previous=[...lines].reverse().find(l=>l.siteId||l.site);lines.push({siteId:previous?.siteId||'',site:previous?.site||'',rateId:'',name:'',unit:'',qty:'',price:'',remarque:'',sav:false});renderLines();calc()}
+function recentRates(){const seen=new Set(),out=[];Object.keys(days).sort().reverse().forEach(date=>(days[date].lines||[]).forEach(l=>{if(l.rateId&&!seen.has(l.rateId)&&rates.some(r=>r.id===l.rateId)){seen.add(l.rateId);out.push(rates.find(r=>r.id===l.rateId))}}));return out.slice(0,5)}
+function recentRatesHtml(){const recent=recentRates();return recent.length?`<div><div class="muted" style="margin-bottom:7px">Tâches récentes</div><div class="recent-rates">${recent.map(r=>`<button class="btn light" onclick="addRecentRate('${r.id}')">${esc(r.nom)}</button>`).join('')}</div></div>`:''}
+function addRecentRate(id){const previous=[...lines].reverse().find(l=>l.siteId||l.site);lines.push({siteId:previous?.siteId||'',site:previous?.site||'',rateId:'',name:'',unit:'',qty:'',price:'',remarque:'',sav:false});pickRate(lines.length-1,id)}
 function renderLines(){
   const box=document.getElementById('lines');if(!box)return;
   if(!lines.length){box.innerHTML='<div class="empty">Aucune tâche. Ajoute une ligne.</div>';return}
@@ -155,6 +163,7 @@ function renderLines(){
         <div><button class="btn red" style="padding:10px 8px" onclick="deleteLine(${i})">×</button></div>
       </div>
       <div class="muted" style="margin-top:6px">${l.unit?'Unité : '+esc(l.unit):'Sélectionne une tâche.'}</div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:9px;color:#111;font-size:14px"><input type="checkbox" style="width:18px;height:18px;margin:0" ${l.sav?'checked':''} onchange="lines[${i}].sav=this.checked"><span>Intervention SAV <span class="muted">(tarif possible à 0 €)</span></span></label>
       <div style="margin-top:8px"><label>Remarque (facultatif)</label><input type="text" value="${esc(l.remarque||'')}" placeholder="Ex. finition, difficulté, précision…" oninput="lines[${i}].remarque=this.value"></div>
     </div>`;
   }).join('');
@@ -213,7 +222,7 @@ async function saveDay(){
    const ownOldIds=day?.lines.filter(x=>x.id&&x.user_id===session.user.id).map(x=>x.id)||[];
    if(ownOldIds.length){const qd=await sb.from('travaux').delete().in('id',ownOldIds);if(qd.error){toast('Erreur modification de tes lignes : '+qd.error.message);return}}
  }
- const payload=clean.map(l=>({jour_id:dayId,chantier_id:l.siteId,tache_id:l.rateId||null,tache_nom:l.name,unite:l.unit||'',quantite:Number(l.qty)||0,prix_unitaire:Number(l.price)||0,remarque:(l.remarque||'').trim()||null,user_id:isAdmin?(l.user_id||session.user.id):session.user.id}));
+ const payload=clean.map(l=>({jour_id:dayId,chantier_id:l.siteId,tache_id:l.rateId||null,tache_nom:l.name,unite:l.unit||'',quantite:Number(l.qty)||0,prix_unitaire:Number(l.price)||0,remarque:((l.sav?'[SAV] ':'')+(l.remarque||'').trim())||null,user_id:isAdmin?(l.user_id||session.user.id):session.user.id}));
  if(payload.length){const q=await sb.from('travaux').insert(payload);if(q.error){toast('Erreur enregistrement : '+q.error.message);return}}
  if(isAdmin){
    const uq=await sb.from('jours').update({updated_at:new Date().toISOString()}).eq('id',dayId);
@@ -241,7 +250,7 @@ function renderHistory(){
     html+='<details style="margin:4px 0 12px;padding:8px 10px;background:#ffffff80;border-radius:12px"><summary style="cursor:pointer;font-size:13px;color:#777">⚙️ Migration ancienne application</summary><div class="muted" style="margin-top:9px">Pour importer une ancienne sauvegarde JSON de la version locale dans Supabase.</div><div class="muted" style="margin-top:6px">À faire une seule fois. Ne pas importer plusieurs fois le même fichier.</div><button class="btn light" style="margin-top:9px;padding:8px 10px;font-size:13px" onclick="document.getElementById(\'migrationFile\').click()">📥 Choisir le fichier</button><input id="migrationFile" type="file" accept=".json,application/json" style="display:none" onchange="migrateOldData(this)"></details>';
   }
   const today=new Date(),monday=new Date(today.getFullYear(),today.getMonth(),today.getDate()-((today.getDay()+6)%7)),sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);const weekStart=`${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`,weekEnd=`${sunday.getFullYear()}-${String(sunday.getMonth()+1).padStart(2,'0')}-${String(sunday.getDate()).padStart(2,'0')}`,weekDates=dates.filter(d=>d>=weekStart&&d<=weekEnd);
-  html+=`<div class="card"><h2>📅 Semaine en cours <span class="muted" style="font-size:14px;font-weight:400">${monday.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})} – ${sunday.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span></h2>${weekDates.length?weekDates.map(d=>{const day=days[d],bySite={};day.lines.forEach(l=>bySite[l.site||'Sans chantier']=(bySite[l.site||'Sans chantier']||0)+l.qty*l.price);return `<div style="padding:10px 0;border-bottom:1px solid #eee"><div class="item"><div><div class="big">${dateFR(d)}</div><div class="muted">${Object.keys(bySite).length} chantier(s) · ${day.lines.length} tâche(s)</div></div><div style="text-align:right">${isAdmin?`<div class="money">${money(day.total)}</div>`:''}<div class="actions" style="justify-content:flex-end;margin-top:6px"><button class="btn light" style="padding:7px 9px" onclick="viewDay('${d}')">Voir</button>${isAdmin||canEditDay(d)?`<button class="btn light" style="padding:7px 9px" onclick="editDay('${d}')">Modifier</button>`:''}</div></div></div>${Object.entries(bySite).map(([site,total])=>`<div class="site-total"><span>🏗️ ${esc(site)}</span>${isAdmin?`<span>${money(total)}</span>`:''}</div>`).join('')}</div>`}).join(''):'<div class="empty">Aucune journée enregistrée cette semaine.</div>'}</div>`;
+  html+=`<div class="card"><h2>📅 Semaine en cours <span class="muted" style="font-size:14px;font-weight:400">${monday.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})} – ${sunday.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</span></h2>${weekDates.length?weekDates.map(d=>{const day=days[d],bySite={};day.lines.forEach(l=>bySite[l.site||'Sans chantier']=(bySite[l.site||'Sans chantier']||0)+l.qty*l.price);return `<div style="padding:10px 0;border-bottom:1px solid #eee"><div class="item"><div><div class="big">${dateFR(d)}${savBadge(day.lines.some(l=>l.sav))}</div><div class="muted">${Object.keys(bySite).length} chantier(s) · ${day.lines.length} tâche(s)</div></div><div style="text-align:right">${isAdmin?`<div class="money">${money(day.total)}</div>`:''}<div class="actions" style="justify-content:flex-end;margin-top:6px"><button class="btn light" style="padding:7px 9px" onclick="viewDay('${d}')">Voir</button>${isAdmin||canEditDay(d)?`<button class="btn light" style="padding:7px 9px" onclick="editDay('${d}')">Modifier</button>`:''}</div></div></div>${Object.entries(bySite).map(([site,total])=>`<div class="site-total"><span>${siteDot(site)}🏗️ ${esc(site)}</span>${isAdmin?`<span>${money(total)}</span>`:''}</div>`).join('')}</div>`}).join(''):'<div class="empty">Aucune journée enregistrée cette semaine.</div>'}</div>`;
   html+='<div class="card"><h2>Journées</h2>';
   if(!dates.length){html+='<div class="empty">Aucune journée enregistrée.</div>'}
   else{
@@ -267,14 +276,14 @@ function renderHistory(){
           const bySite={};
           days[d].lines.forEach(l=>bySite[l.site||'Sans chantier']=(bySite[l.site||'Sans chantier']||0)+l.qty*l.price);
           html+='<div style="padding:10px 6px 10px 10px;border-bottom:1px solid #eee"><div class="item">';
-          html+='<div><div class="big">'+dateFR(d)+'</div><div class="muted">'+Object.keys(bySite).length+' chantier(s) · '+days[d].lines.length+' tâche(s)'+'</div></div>';
+          html+='<div><div class="big">'+dateFR(d)+savBadge(days[d].lines.some(l=>l.sav))+'</div><div class="muted">'+Object.keys(bySite).length+' chantier(s) · '+days[d].lines.length+' tâche(s)'+'</div></div>';
           html+='<div style="text-align:right">'+(isAdmin?'<div class="money">'+money(days[d].total)+'</div>':'')+'<div class="actions" style="justify-content:flex-end;margin-top:6px"><button class="btn light" style="padding:7px 9px" onclick="viewDay(\''+d+'\')">Voir</button>'+(isAdmin||canEditDay(d)?'<button class="btn light" style="padding:7px 9px" onclick="editDay(\''+d+'\')">Modifier</button>':'')+'</div></div></div>';
           Object.entries(bySite).forEach(([site,total])=>{
             const siteLines=days[d].lines.filter(l=>(l.site||'Sans chantier')===site);
             const workerIds=[...new Set(siteLines.map(l=>l.user_id).filter(Boolean))];
             const workerNames=workerIds.map(id=>userName(id)).filter(Boolean);
             const workerLabel=workerNames.length?'<span class="history-worker">('+workerNames.map(esc).join(', ')+')</span>':'';
-            html+='<div class="site-total"><span>🏗️ '+esc(site)+' '+workerLabel+'</span>'+(isAdmin?'<span>'+money(total)+'</span>':'')+'</div>';
+            html+='<div class="site-total"><span>'+siteDot(site)+'🏗️ '+esc(site)+' '+workerLabel+'</span>'+(isAdmin?'<span>'+money(total)+'</span>':'')+'</div>';
           });
           html+='</div>';
         });
@@ -355,10 +364,10 @@ function viewDay(d){
   day.lines.forEach(l=>{const k=l.site||'Sans chantier';if(!bySite[k])bySite[k]=[];bySite[k].push(l)});
   let html='<div class=\"modalbg\"><div class=\"modal\" style=\"width:min(700px,100%);max-height:90vh;overflow:auto\"><div style=\"display:flex;justify-content:space-between;align-items:center;gap:10px\"><div><h2 style=\"margin:0 0 4px\">Journée du '+dateFR(d)+'</h2><div class=\"muted\">Consultation seule</div></div><button class=\"btn light\" onclick=\"closeModal()\">Fermer</button></div>';
   Object.entries(bySite).forEach(([site,arr])=>{
-    html+='<div style=\"margin-top:16px\"><h3>🏗️ '+esc(site)+'</h3>';
+    html+='<div style=\"margin-top:16px\"><h3>'+siteDot(site)+'🏗️ '+esc(site)+'</h3>';
     arr.forEach(l=>{
       const lineTotal=(Number(l.qty)||0)*(Number(l.price)||0);
-      html+='<div class=\"work\"><div class=\"workhead\"><div class=\"worktitle\">'+esc(l.name||'Tâche libre')+'</div>'+(isAdmin?'<div class=\"money\">'+money(lineTotal)+'</div>':'')+'</div>';
+      html+='<div class=\"work\"><div class=\"workhead\"><div class=\"worktitle\">'+esc(l.name||'Tâche libre')+savBadge(l.sav)+'</div>'+(isAdmin?'<div class=\"money\">'+money(lineTotal)+'</div>':'')+'</div>';
       html+='<div class=\"muted\">Quantité : <b>'+esc(l.qty)+'</b> '+esc(l.unit||'')+(isAdmin?' · Prix : '+money(l.price)+' / '+esc(l.unit||''):'')+'</div>'+(l.remarque?'<div style=\"margin-top:7px\"><b>Remarque :</b> '+esc(l.remarque)+'</div>':'')+'</div>';
     });
     html+='</div>';
@@ -411,7 +420,7 @@ function runSearch(){
  rows.sort((a,b)=>b.date.localeCompare(a.date));
  const total=rows.reduce((s,r)=>s+r.qty*r.price,0),siteDays={};rows.forEach(r=>{const key=r.site||'Sans chantier';if(!siteDays[key])siteDays[key]=new Set();siteDays[key].add(r.date)});const box=document.getElementById('searchResults');if(!box)return;
  const siteDayHtml=Object.entries(siteDays).map(([name,dates])=>`<div class="site-total"><span>🏗️ ${esc(name)}</span><span>${dates.size} jour(s) travaillé(s)</span></div>`).join('');
- box.innerHTML=`<div class="card"><h2>Résultats</h2><div class="statgrid"><div class="stat"><div class="muted">Lignes trouvées</div><div class="value">${rows.length}</div></div>${isAdmin?`<div class="stat"><div class="muted">Montant total</div><div class="value">${money(total)}</div></div>`:''}</div>${siteDayHtml}${rows.length?rows.map(r=>`<div class="item"><div onclick="editDay('${r.date}')" style="cursor:pointer"><div class="big">${esc(r.name||'Tâche libre')}</div><div class="muted">${dateFR(r.date)} · 🏗️ ${esc(r.site||'Sans chantier')}</div><div class="muted">${r.qty} ${esc(r.unit||'')}${isAdmin?' × '+money(r.price):''}</div></div>${isAdmin?`<div class="money">${money(r.qty*r.price)}</div>`:''}</div>`).join(''):'<div class="empty">Aucun résultat.</div>'}</div>`
+ box.innerHTML=`<div class="card"><h2>Résultats</h2><div class="statgrid"><div class="stat"><div class="muted">Lignes trouvées</div><div class="value">${rows.length}</div></div>${isAdmin?`<div class="stat"><div class="muted">Montant total</div><div class="value">${money(total)}</div></div>`:''}</div>${siteDayHtml}${rows.length?rows.map(r=>`<div class="item"><div onclick="editDay('${r.date}')" style="cursor:pointer"><div class="big">${esc(r.name||'Tâche libre')}${savBadge(r.sav)}</div><div class="muted">${dateFR(r.date)} · ${siteDot(r.site||'Sans chantier')}🏗️ ${esc(r.site||'Sans chantier')}</div><div class="muted">${r.qty} ${esc(r.unit||'')}${isAdmin?' × '+money(r.price):''}</div></div>${isAdmin?`<div class="money">${money(r.qty*r.price)}</div>`:''}</div>`).join(''):'<div class="empty">Aucun résultat.</div>'}</div>`
 }
 function runStats(){
  const year=document.getElementById('statYear')?.value||String(new Date().getFullYear());
