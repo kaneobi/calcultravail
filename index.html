@@ -28,13 +28,30 @@
 @media(max-width:700px){.picker-menu{min-width:0;width:max(100%,220px);max-width:calc(100vw - 40px)}.picker-options{max-height:200px}}
 
 </style>
-<style>.history-worker{font-size:11px;font-weight:400;opacity:.65;margin-left:5px;white-space:nowrap}.offline-banner{max-width:900px;margin:0 auto 10px;padding:10px 14px;border-radius:12px;background:#fff0d8;color:#744500;font-size:13px;font-weight:650}.pending-banner{background:#e8f0ff;color:#174ea6}.mainnav{display:flex;align-items:center;justify-content:flex-end;gap:6px;background:#dddde2;padding:5px;border-radius:14px;margin-bottom:14px}.hamburger-menu{position:relative}.hamburger-menu summary{display:flex;align-items:center;justify-content:center;width:44px;height:40px;list-style:none;cursor:pointer;border-radius:10px}.hamburger-menu summary::-webkit-details-marker{display:none}.hamburger-menu summary:hover,.hamburger-menu[open] summary{background:#fff}.hamburger-menu svg{width:23px;height:23px;fill:none;stroke:#222;stroke-width:2;stroke-linecap:round}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.nav-dropdown{position:absolute;z-index:16;top:calc(100% + 5px);right:0;min-width:205px;padding:6px;background:#fff;border:1px solid #d8d8de;border-radius:12px;box-shadow:0 8px 28px #0002}.mainnav .nav-link{display:block;width:100%;padding:11px 12px;border:0;border-radius:8px;background:#fff;text-align:left;font-size:14px;color:#222}.mainnav .nav-link:hover{background:#f2f2f7}.mainnav .nav-link.active{background:#e8f0ff;color:#174ea6;font-weight:700}</style><style>.entry-fields{display:grid;gap:10px}.task-fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:end}.history-day{padding:10px 12px;margin:8px 0;border:1px solid #d8d8e2;background:#f9f9fc;border-radius:12px}.history-day>.item{align-items:flex-start;padding:0 0 8px}.history-day .money{font-size:18px;line-height:normal}.supply-entry{border-left:4px solid #2487c9}@media(max-width:460px){.task-fields{grid-template-columns:1fr 1fr}.task-fields>div:first-child{grid-column:1/-1}.history-day>.item{gap:6px}.history-day .big,.history-day .money{font-size:15px}}</style></head>
+<style>.history-worker{font-size:11px;font-weight:400;opacity:.65;margin-left:5px;white-space:nowrap}.offline-banner{max-width:900px;margin:0 auto 10px;padding:10px 14px;border-radius:12px;background:#fff0d8;color:#744500;font-size:13px;font-weight:650}.pending-banner{background:#e8f0ff;color:#174ea6}.mainnav{display:flex;align-items:center;justify-content:flex-end;gap:6px;background:#dddde2;padding:5px;border-radius:14px;margin-bottom:14px}.hamburger-menu{position:relative}.hamburger-menu summary{display:flex;align-items:center;justify-content:center;width:44px;height:40px;list-style:none;cursor:pointer;border-radius:10px}.hamburger-menu summary::-webkit-details-marker{display:none}.hamburger-menu summary:hover,.hamburger-menu[open] summary{background:#fff}.hamburger-menu svg{width:23px;height:23px;fill:none;stroke:#222;stroke-width:2;stroke-linecap:round}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.nav-dropdown{position:absolute;z-index:16;top:calc(100% + 5px);right:0;min-width:205px;padding:6px;background:#fff;border:1px solid #d8d8de;border-radius:12px;box-shadow:0 8px 28px #0002}.mainnav .nav-link{display:block;width:100%;padding:11px 12px;border:0;border-radius:8px;background:#fff;text-align:left;font-size:14px;color:#222}.mainnav .nav-link:hover{background:#f2f2f7}.mainnav .nav-link.active{background:#e8f0ff;color:#174ea6;font-weight:700}</style><style>.entry-fields{display:grid;gap:10px}.task-fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:end}.history-day{padding:10px 12px;margin:8px 0;border:1px solid #d8d8e2;background:#f9f9fc;border-radius:12px}.history-day>.item{align-items:flex-start;padding:0 0 8px}.history-day .money{font-size:18px;line-height:normal}.supply-entry{border-left:4px solid #2487c9}@media(max-width:460px){.task-fields{grid-template-columns:1fr 1fr}.task-fields>div:first-child{grid-column:1/-1}.history-day>.item{gap:6px}.history-day .big,.history-day .money{font-size:15px}}</style><style>
+.day-photos{margin-top:16px;padding-top:14px;border-top:1px solid #e5e5e8}
+.day-photos .actions{align-items:center;margin-bottom:8px}
+.day-photos input{max-width:370px}
+.day-photos [role=status]{margin:8px 0}
+.day-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px}
+.day-photo-tile{display:grid;align-content:start;gap:5px;min-width:0}
+.day-photo-open{border:0;border-radius:10px;background:#f2f2f7;padding:0;aspect-ratio:1;overflow:hidden;cursor:zoom-in}
+.day-photo-open img{display:block;width:100%;height:100%;object-fit:cover}
+.day-photo-tile .btn{padding:8px 4px;font-size:13px}
+.day-photo-dialog{border:0;border-radius:18px;padding:14px;max-width:min(600px,94vw);background:#fff;color:#111}
+.day-photo-dialog::backdrop{background:#000a}
+.day-photo-dialog img{display:block;width:min(550px,85vw);height:auto;max-height:70vh;object-fit:contain;margin-top:10px}
+</style>
+</head>
 <body>
 <div class="app">
 <header><div><h1>Suivi Chantier</h1><div id="count" class="muted"></div></div><div id="userArea"></div></header>
 <div id="offlineStatus" aria-live="polite"></div><div id="app"></div>
 </div>
 <div id="modal"></div><div id="toast" class="toast"></div>
+<script type="importmap">
+{"imports":{"wasm-feature-detect":"https://cdn.jsdelivr.net/npm/wasm-feature-detect@1.8.0/dist/esm/index.js"}}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://pcbrifwucnmdkxvvqbit.supabase.co';
@@ -83,6 +100,7 @@ async function bootstrap(sess){
   if(booting) return;
   booting=true;
   try{
+    if(session?.user?.id!==sess?.user?.id)closeModal();
     session=sess;
     if(!sess){profile=null;isAdmin=false;sites=[];rates=[];credits=[];days={};document.getElementById('userArea').innerHTML='';renderLogin();return;}
     const cached=await offlineRead(sess.user.id);if(cached)pendingDays=cached.pendingDays||{};
@@ -104,8 +122,8 @@ async function init(){
  const {data:{session:s},error}=await sb.auth.getSession();
  if(error){console.error(error);renderLogin();return;}
  await bootstrap(s);
- window.addEventListener('online',()=>{refreshOfflineStatus();syncPendingDays()});
- window.addEventListener('offline',()=>{refreshOfflineStatus();render()});
+ window.addEventListener('online',()=>{refreshOfflineStatus();document.querySelectorAll('[data-day-photos]').forEach(box=>loadDayPhotos(box));syncPendingDays()});
+ window.addEventListener('offline',()=>{refreshOfflineStatus();render();document.querySelectorAll('#modal [data-day-photos]').forEach(box=>loadDayPhotos(box))});
  if(navigator.onLine)syncPendingDays();
 }
 async function loadUser(){
@@ -165,7 +183,7 @@ function nav(){const link=(page,label)=>`<button type="button" class="nav-link $
 function renderToday(){
  const day=days[currentDate]; if(day&&!lines.length&&(isAdmin||day.lines.every(l=>l.user_id===session.user.id)))lines=day.lines.map(x=>({...x}));
  const editingExisting=!isAdmin && !!day && lines.length>0;
- document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" ${editingExisting?'disabled':''} onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.${editingExisting?' Tu modifies uniquement tes propres lignes.':''}</div></div><div class="card"><h2>Travaux réalisés</h2>${recentRatesHtml()}<div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche</button><div class="muted" style="margin-top:7px">La nouvelle tâche reprend le dernier chantier choisi. Tu peux le modifier sur chaque ligne.</div>${isAdmin?'<div id="todayTotals" style="margin-top:14px"></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button>${isAdmin||!day||day.lines.every(l=>l.user_id===session.user.id)?'<button class="btn red" onclick="clearDay()">Effacer</button>':''}</div></div></main>`;renderLines();calc()}
+ document.getElementById('app').innerHTML=nav()+`<main><div class="card"><h2>Journée</h2><label>Date</label><input type="date" value="${currentDate}" ${editingExisting?'disabled':''} onchange="changeDate(this.value)"><div class="muted" style="margin-top:10px">Plusieurs chantiers et plusieurs tâches sont possibles dans la même journée.${editingExisting?' Tu modifies uniquement tes propres lignes.':''}</div></div><div class="card"><h2>Travaux réalisés</h2>${recentRatesHtml()}<div id="lines"></div><button class="btn light" onclick="addLine()">＋ Ajouter une tâche</button><div class="muted" style="margin-top:7px">La nouvelle tâche reprend le dernier chantier choisi. Tu peux le modifier sur chaque ligne.</div>${dayPhotosHtml(currentDate)}${isAdmin?'<div id="todayTotals" style="margin-top:14px"></div>':''}<div class="actions" style="margin-top:13px"><button class="btn" onclick="saveDay()">Enregistrer la journée</button>${isAdmin||!day||day.lines.every(l=>l.user_id===session.user.id)?'<button class="btn red" onclick="clearDay()">Effacer</button>':''}</div></div></main>`;renderLines();calc();mountDayPhotos(document.getElementById('app'))}
 function changeDate(v){currentDate=v;lines=days[v]?days[v].lines.map(x=>({...x})):[];renderToday()}
 function addLine(){const previous=[...lines].reverse().find(l=>l.siteId||l.site);lines.push({siteId:previous?.siteId||'',site:previous?.site||'',rateId:'',name:'',unit:'',qty:'',price:'',remarque:'',sav:false,daniel:false});renderLines();calc()}
 function recentRates(){const seen=new Set(),out=[];Object.keys(days).sort().reverse().forEach(date=>(days[date].lines||[]).forEach(l=>{if(l.rateId&&!seen.has(l.rateId)&&rates.some(r=>r.id===l.rateId)){seen.add(l.rateId);out.push(rates.find(r=>r.id===l.rateId))}}));return out.slice(0,5)}
@@ -407,7 +425,7 @@ function viewDay(d){
   if(!day){toast('Journée introuvable');return}
   const bySite={};
   day.lines.forEach(l=>{const k=l.site||'Sans chantier';if(!bySite[k])bySite[k]=[];bySite[k].push(l)});
-  let html='<div class=\"modalbg\"><div class=\"modal\" style=\"width:min(700px,100%);max-height:90vh;overflow:auto\"><div style=\"display:flex;justify-content:space-between;align-items:center;gap:10px\"><div><h2 style=\"margin:0 0 4px\">Journée du '+dateFR(d)+'</h2><div class=\"muted\">Consultation seule</div></div><button class=\"btn light\" onclick=\"closeModal()\">Fermer</button></div>';
+  let html='<div class=\"modalbg\"><div class=\"modal\" style=\"width:min(700px,100%);max-height:90vh;overflow:auto\"><div style=\"display:flex;justify-content:space-between;align-items:center;gap:10px\"><div><h2 style=\"margin:0 0 4px\">Journée du '+dateFR(d)+'</h2></div><button class=\"btn light\" onclick=\"closeModal()\">Fermer</button></div>';
   Object.entries(bySite).forEach(([site,arr])=>{
     html+='<div style=\"margin-top:16px\"><h3>'+siteDot(site)+'🏗️ '+esc(site)+'</h3>';
     arr.forEach(l=>{
@@ -417,9 +435,12 @@ function viewDay(d){
     });
     html+='</div>';
   });
+  html+=dayPhotosHtml(d);
   if(isAdmin)html+='<div class=\"total\"><small>Total journée</small><br>'+money(day.total)+'</div>';
   html+='</div></div>';
-  document.getElementById('modal').innerHTML=html;
+  const modal=document.getElementById('modal');
+  modal.innerHTML=html;
+  mountDayPhotos(modal);
 }
 async function undoLast(){const a=undoStack.pop();if(!a){toast('Rien à annuler');return}if(a.type==='line'){lines.splice(Math.min(a.index,lines.length),0,a.data);toast('Tâche remise dans le formulaire — pense à enregistrer la journée')}else{if(!days[a.date]){currentDate=a.date;lines=a.data.lines.map(x=>({...x}));toast('Journée restaurée dans le formulaire — pense à enregistrer');show('today');return}}render()}
 
@@ -563,6 +584,214 @@ function supplyLine(l,i){const site=sites.find(s=>s.id===l.siteId)?.nom||l.site|
 function renderSupplies(){if(!isAdmin){show('today');return;}document.getElementById('app').innerHTML=nav()+'<main><div class="card"><h2>Fournitures</h2><label for="fn">Nom de la fourniture</label><input id="fn" placeholder="Ex. Sac de ciment"><div class="grid2" style="margin-top:10px"><div><label for="fu">Unité</label><input id="fu" placeholder="Ex. sac, pièce, kg"></div><div><label for="fp">Prix unitaire (€)</label><input id="fp" type="number" min="0" step="0.01"></div></div><button class="btn" style="margin-top:10px" onclick="saveSupply()">Ajouter la fourniture</button></div><div class="card"><h3>Catalogue</h3><div id="supplyCatalog"></div></div></main>';const box=document.getElementById('supplyCatalog');if(!supplies.length)box.textContent='Aucune fourniture enregistrée.';supplies.forEach(f=>{const row=document.createElement('div');row.className='item';const label=document.createElement('span');label.textContent=f.nom+' · '+money(f.prix)+' / '+f.unite;const button=document.createElement('button');button.className='btn light';button.textContent='Modifier le prix';button.onclick=()=>editSupplyPrice(f);row.append(label,button);box.append(row);});}
 async function saveSupply(){if(!isAdmin)return;const name=document.getElementById('fn').value.trim(),unite=document.getElementById('fu').value.trim(),value=document.getElementById('fp').value,prix=Number(value);if(!name||!unite||!value||!Number.isFinite(prix)||prix<0){toast('Renseigne un nom, une unité et un prix valide.');return;}if(supplies.some(f=>f.nom.toLowerCase()===name.toLowerCase())){toast('Cette fourniture existe déjà.');return;}const q=await sb.from('taches').insert({nom:SUPPLY_PREFIX+name,unite,prix,created_by:session.user.id});if(q.error){toast('Ajout impossible : '+q.error.message);return;}await loadData();await persistOffline();if(currentPage==='supplies')renderSupplies();toast('Fourniture ajoutée');}
 async function editSupplyPrice(f){if(!isAdmin)return;const value=prompt('Nouveau prix unitaire de '+f.nom+' (€) :',String(f.prix));if(value===null)return;const prix=Number(value.trim().replace(',','.'));if(!value.trim()||!Number.isFinite(prix)||prix<0){toast('Saisis un prix valide.');return;}const q=await sb.from('taches').update({prix}).eq('id',f.id);if(q.error){toast('Modification impossible : '+q.error.message);return;}await loadData();await persistOffline();if(currentPage==='supplies')renderSupplies();toast('Prix modifié pour les prochaines saisies');}
+
+const DAY_PHOTO_BUCKET='suivi-chantier-photos';
+const DAY_PHOTO_NAME=/^[a-f0-9-]{36}--[a-f0-9-]{36}\.webp$/;
+const dayPhotoLoads=new WeakMap();
+const dayPhotoWrites=new Set();
+
+function dayPhotosHtml(date){
+ const day=days[date];
+ const canAdd=day?.id&&(isAdmin||day.user_id===session.user.id||canEditDay(date));
+ return `<section class="day-photos" aria-label="Photos de la journée" data-day-photos="${esc(day?.id||'')}">
+   <h3>Photos de la journée</h3>
+   ${day?.id?`<div class="actions">
+     ${canAdd?'<label>Ajouter des photos<input type="file" accept="image/*,.heic,.heif" multiple disabled></label>':''}
+     <button type="button" class="btn light" data-photo-refresh>Actualiser</button>
+   </div>`:''}
+   <p class="muted" role="status">${day?.id?'Chargement des photos…':'Enregistre et synchronise la journée pour ajouter des photos.'}</p>
+   <div class="day-photo-grid"></div>
+   <dialog class="day-photo-dialog" aria-label="Photo agrandie">
+     <form method="dialog"><button class="btn light" autofocus>Fermer</button></form>
+     <img alt="Photo de la journée agrandie">
+   </dialog>
+ </section>`;
+}
+
+function mountDayPhotos(root){
+ const box=root.querySelector('[data-day-photos]');
+ if(!box?.dataset.dayPhotos)return;
+ const input=box.querySelector('input');
+ if(input)input.onchange=()=>uploadDayPhotos(box,input);
+ box.querySelector('[data-photo-refresh]').onclick=()=>loadDayPhotos(box);
+ loadDayPhotos(box);
+}
+
+function photoWriteKey(box,userId){return `${userId}/${box.dataset.dayPhotos}`}
+
+async function loadDayPhotos(box,message=''){
+ const dayId=box.dataset.dayPhotos,userId=session?.user?.id;
+ if(!dayId||!userId)return;
+ const load={};
+ dayPhotoLoads.set(box,load);
+ const current=()=>box.isConnected&&session?.user?.id===userId&&dayPhotoLoads.get(box)===load;
+ const status=box.querySelector('[role=status]');
+ const grid=box.querySelector('.day-photo-grid');
+ const input=box.querySelector('input');
+ const refresh=box.querySelector('[data-photo-refresh]');
+ const busy=()=>dayPhotoWrites.has(photoWriteKey(box,userId));
+ if(input)input.disabled=true;
+ refresh.disabled=true;
+ grid.replaceChildren();
+ try{
+   if(!navigator.onLine){status.textContent='Connexion Internet nécessaire pour les photos.';return}
+   if(busy()){status.textContent='Modification des photos en cours…';return}
+   status.textContent='Chargement des photos…';
+   const storage=sb.storage.from(DAY_PHOTO_BUCKET);
+   const names=new Set();
+   const limit=100;
+   for(let offset=0;current();offset+=limit){
+     const {data,error}=await storage.list(dayId,{limit,offset,sortBy:{column:'name',order:'asc'}});
+     if(error)throw error;
+     data.filter(file=>file.id&&DAY_PHOTO_NAME.test(file.name)).forEach(file=>names.add(file.name));
+     if(data.length<limit)break;
+   }
+   if(!current())return;
+   const paths=[...names].map(name=>`${dayId}/${name}`);
+   const photos=[];
+   for(let start=0;start<paths.length&&current();start+=limit){
+     const {data,error}=await storage.createSignedUrls(paths.slice(start,start+limit),3600);
+     if(error)throw error;
+     photos.push(...data);
+   }
+   if(!current())return;
+   photos.forEach((photo,index)=>grid.append(dayPhotoTile(box,photo,index,userId)));
+   status.textContent=[message,photos.length?'':'Aucune photo pour cette journée.'].filter(Boolean).join(' ');
+ }catch(error){
+   if(current())status.textContent=[message,`Chargement impossible. ${error.message||'Réessaie dans un instant.'}`].filter(Boolean).join(' ');
+ }finally{
+   if(current()){
+     if(input)input.disabled=busy()||!navigator.onLine;
+     refresh.disabled=busy()||!navigator.onLine;
+   }
+ }
+}
+
+function dayPhotoTile(box,photo,index,userId){
+ const tile=document.createElement('div');
+ tile.className='day-photo-tile';
+ const label=`Photo ${index+1}`;
+ if(photo.signedUrl){
+   const button=document.createElement('button');
+   button.type='button';
+   button.className='day-photo-open';
+   button.setAttribute('aria-label',`Agrandir la photo ${index+1}`);
+   const image=document.createElement('img');
+   image.alt=label;
+   image.loading='lazy';
+   image.onerror=()=>{button.disabled=true;button.textContent='Actualise la galerie.'};
+   image.src=photo.signedUrl;
+   button.onclick=()=>{
+     const dialog=box.querySelector('dialog');
+     dialog.querySelector('img').src=photo.signedUrl;
+     dialog.showModal();
+   };
+   button.append(image);
+   tile.append(button);
+ }else{
+   tile.textContent=`${label} indisponible. Actualise la galerie.`;
+ }
+ if(photo.path&&(isAdmin||photo.path.split('/').pop().startsWith(`${userId}--`))){
+   const remove=document.createElement('button');
+   remove.type='button';
+   remove.className='btn red';
+   remove.textContent='Supprimer';
+   remove.setAttribute('aria-label',`Supprimer la photo ${index+1}`);
+   remove.onclick=()=>deleteDayPhoto(box,photo.path);
+   tile.append(remove);
+ }
+ return tile;
+}
+
+async function compressDayPhoto(file){
+ const url=URL.createObjectURL(file);
+ try{
+   const image=new Image();
+   await new Promise((resolve,reject)=>{
+     image.onload=resolve;
+     image.onerror=()=>reject(Error('Format illisible sur cet appareil. Essaie une image JPEG ou PNG.'));
+     image.src=url;
+   });
+   const scale=Math.min(1,400/Math.max(image.naturalWidth,image.naturalHeight));
+   const canvas=document.createElement('canvas');
+   canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+   canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+   const ctx=canvas.getContext('2d');
+   ctx.drawImage(image,0,0,canvas.width,canvas.height);
+   const webp=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.75));
+   if(webp?.type==='image/webp')return webp;
+
+   // Safari can return PNG for a WebP request. Encode the resized pixels in WebAssembly.
+   try{
+     const {default:encode}=await import('https://cdn.jsdelivr.net/npm/@jsquash/webp@1.5.0/encode.js');
+     const bytes=await encode(ctx.getImageData(0,0,canvas.width,canvas.height),{quality:75});
+     return new Blob([bytes],{type:'image/webp'});
+   }catch{
+     throw Error('Conversion WebP indisponible. Vérifie la connexion et réessaie.');
+   }
+ }finally{
+   URL.revokeObjectURL(url);
+ }
+}
+
+async function changeDayPhotos(box,write){
+ const userId=session?.user?.id;
+ if(!userId||!navigator.onLine||!box.isConnected)return;
+ const key=photoWriteKey(box,userId);
+ if(dayPhotoWrites.has(key))return;
+ dayPhotoWrites.add(key);
+ const dayId=box.dataset.dayPhotos;
+ const galleries=()=>[...document.querySelectorAll('[data-day-photos]')].filter(gallery=>gallery.dataset.dayPhotos===dayId);
+ galleries().forEach(gallery=>loadDayPhotos(gallery));
+ let message='';
+ try{
+   message=await write(sb.storage.from(DAY_PHOTO_BUCKET),dayId,userId);
+ }catch(error){
+   message=error.message||'Modification des photos impossible.';
+ }finally{
+   dayPhotoWrites.delete(key);
+   if(session?.user?.id===userId){
+     const mounted=galleries();
+     mounted.forEach(gallery=>loadDayPhotos(gallery,message));
+     if(!mounted.length&&message)toast(message);
+   }
+ }
+}
+
+async function uploadDayPhotos(box,input){
+ const files=Array.from(input.files||[]);
+ input.value='';
+ if(!files.length)return;
+ await changeDayPhotos(box,async(storage,dayId,userId)=>{
+   let added=0;
+   const failures=[];
+   for(const file of files){
+     if(session?.user?.id!==userId)break;
+     try{
+       const webp=await compressDayPhoto(file);
+       if(session?.user?.id!==userId)break;
+       const path=`${dayId}/${userId}--${crypto.randomUUID()}.webp`;
+       const {error}=await storage.upload(path,webp,{contentType:'image/webp',upsert:false});
+       if(error)throw error;
+       added++;
+     }catch(error){
+       failures.push(error.message||'Envoi impossible.');
+     }
+   }
+   const success=added===1?'1 photo ajoutée.':`${added} photos ajoutées.`;
+   return failures.length?`${success} ${failures.length} échec(s). ${failures[0]}`:success;
+ });
+}
+
+async function deleteDayPhoto(box,path){
+ if(!confirm('Supprimer cette photo pour tous les utilisateurs ?'))return;
+ await changeDayPhotos(box,async storage=>{
+   const {data,error}=await storage.remove([path]);
+   if(error)throw error;
+   if(!data?.length)return 'La photo a déjà été supprimée ou tu n’as pas les droits nécessaires.';
+   return 'Photo supprimée.';
+ });
+}
 
 init();
 </script>
